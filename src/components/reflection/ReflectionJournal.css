@@ -1,0 +1,215 @@
+.reflection-journal {
+  margin-top: 2.5rem;
+}
+
+.reflection-journal__header,
+.reflection-journal__entries-heading,
+.reflection-journal__editor-footer,
+.reflection-journal__entry-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.reflection-journal__header {
+  margin-bottom: 1rem;
+}
+
+.reflection-journal__header h2,
+.reflection-journal__entries-heading h3 {
+  margin-bottom: 0.25rem;
+}
+
+.reflection-journal__header p,
+.reflection-journal__entries-heading > span {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.reflection-journal__privacy {
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--color-primary-light);
+  border-radius: var(--radius-md);
+  background: rgba(30, 41, 66, 0.45);
+  color: var(--text-secondary);
+  font-size: 0.825rem;
+  line-height: 1.55;
+}
+
+.reflection-journal__privacy strong {
+  color: var(--text-primary);
+}
+
+.reflection-journal__editor {
+  margin-bottom: 1.75rem;
+}
+
+.reflection-journal__prompt {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  border-left: 3px solid var(--color-accent-lavender);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-elevated);
+}
+
+.reflection-journal__eyebrow {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.reflection-journal__prompt p {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.reflection-journal__prompt-button {
+  flex-shrink: 0;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.reflection-journal__label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.reflection-journal__textarea {
+  min-height: 150px;
+}
+
+.reflection-journal__editor-footer {
+  align-items: flex-start;
+  margin-top: 0.75rem;
+}
+
+.reflection-journal__counter {
+  padding-top: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.775rem;
+}
+
+.reflection-journal__actions,
+.reflection-journal__entry-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.reflection-journal__actions .btn,
+.reflection-journal__entry-actions .btn {
+  font-size: 0.8rem;
+}
+
+.reflection-journal__message {
+  min-height: 1.25rem;
+  margin-top: 0.5rem;
+  color: var(--color-success);
+  font-size: 0.825rem;
+}
+
+.reflection-journal__message.is-error {
+  color: #fda4af;
+}
+
+.reflection-journal__entries {
+  margin-top: 1.5rem;
+}
+
+.reflection-journal__entries-heading {
+  margin-bottom: 0.85rem;
+}
+
+.reflection-journal__empty {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.reflection-journal__empty svg {
+  flex-shrink: 0;
+  color: var(--color-primary-light);
+}
+
+.reflection-journal__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.reflection-journal__entry {
+  padding: 1rem 1.25rem;
+}
+
+.reflection-journal__entry-date {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--color-primary-light);
+}
+
+.reflection-journal__entry-date h4 {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.reflection-journal__entry-date span {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.reflection-journal__delete {
+  color: #fda4af;
+}
+
+.reflection-journal__entry-content {
+  margin-top: 0.85rem;
+  padding: 0.85rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-elevated);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+  .reflection-journal__header,
+  .reflection-journal__prompt,
+  .reflection-journal__editor-footer,
+  .reflection-journal__entry-top {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .reflection-journal__prompt-button {
+    align-self: flex-start;
+  }
+
+  .reflection-journal__actions,
+  .reflection-journal__entry-actions {
+    justify-content: flex-start;
+  }
+
+  .reflection-journal__entry {
+    padding: 1rem;
+  }
+}

@@ -12,6 +12,7 @@ The goal is to make daily self-reflection approachable, private, and easy to use
 - **Wellness dashboard** — View a summary of your check-in information.
 - **History and trends** — Explore wellness patterns using the current demonstration data and available check-in state.
 - **Reflection prompts** — Use guided prompts to reflect on your day.
+- **Reflection journal** — Write, review, edit, and delete reflections during the current page session.
 - **Support resources** — View wellness and support information provided by the application.
 - **Privacy-conscious design** — Keep the interface focused on personal reflection and make privacy an important part of future development.
 - **Responsive interface** — Use the application across different screen sizes.
@@ -90,6 +91,7 @@ The current version focuses on the user interface and core wellness check-in exp
 Important implementation details:
 
 - Check-ins are currently stored in application memory and are not guaranteed to persist after refreshing the page.
+- Reflection journal entries are also held in application memory only. They remain available while switching tabs but are cleared when the page is refreshed or closed. Journal entries are not sent to AI or external services and are not monitored by staff or counsellors. Anyone with access to the open page or an unlocked device may be able to read them.
 - History and trend displays may use synthetic demonstration data rather than a student's complete saved history.
 - User authentication and a persistent database have not yet been implemented.
 - AI chat and voice interaction are planned features, not currently available functionality.

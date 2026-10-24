@@ -34,6 +34,9 @@ export default function App() {
   // Application data state: initialized with our 6 synthetic past demo check-ins
   const [checkIns, setCheckIns] = useState(INITIAL_SYNTHETIC_CHECKINS);
 
+  // Journal entries remain available across tabs for this page session only.
+  const [journalEntries, setJournalEntries] = useState([]);
+
   // Today's date string ('YYYY-MM-DD'). Stored in state to keep rendering pure.
   const [todayDate] = useState(() => getTodayDateString());
 
@@ -69,6 +72,24 @@ export default function App() {
         return [...previousList, newRecord];
       }
     });
+  };
+
+  const handleAddJournalEntry = (entry) => {
+    setJournalEntries((previousEntries) => [...previousEntries, entry]);
+  };
+
+  const handleUpdateJournalEntry = (updatedEntry) => {
+    setJournalEntries((previousEntries) =>
+      previousEntries.map((entry) =>
+        entry.id === updatedEntry.id ? updatedEntry : entry
+      )
+    );
+  };
+
+  const handleDeleteJournalEntry = (entryId) => {
+    setJournalEntries((previousEntries) =>
+      previousEntries.filter((entry) => entry.id !== entryId)
+    );
   };
 
   return (
@@ -109,7 +130,12 @@ export default function App() {
         )}
 
         {activeTab === 'reflections' && (
-          <ReflectionPrompts />
+          <ReflectionPrompts
+            journalEntries={journalEntries}
+            onAddJournalEntry={handleAddJournalEntry}
+            onUpdateJournalEntry={handleUpdateJournalEntry}
+            onDeleteJournalEntry={handleDeleteJournalEntry}
+          />
         )}
 
         {activeTab === 'support' && (

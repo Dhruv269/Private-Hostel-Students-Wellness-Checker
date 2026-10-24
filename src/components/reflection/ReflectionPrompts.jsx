@@ -6,8 +6,14 @@ import {
   Info
 } from 'lucide-react';
 import { STATIC_REFLECTION_PROMPTS } from '../../data/mockData';
+import ReflectionJournal from './ReflectionJournal';
 
-export default function ReflectionPrompts() {
+export default function ReflectionPrompts({
+  journalEntries,
+  onAddJournalEntry,
+  onUpdateJournalEntry,
+  onDeleteJournalEntry
+}) {
   const [copiedId, setCopiedId] = useState(null);
   const [selectedPrompt, setSelectedPrompt] = useState(STATIC_REFLECTION_PROMPTS[0]);
   const [scratchpadText, setScratchpadText] = useState('');
@@ -166,6 +172,13 @@ export default function ReflectionPrompts() {
           </div>
         </div>
       </div>
+
+      <ReflectionJournal
+        entries={journalEntries}
+        onAddEntry={onAddJournalEntry}
+        onUpdateEntry={onUpdateJournalEntry}
+        onDeleteEntry={onDeleteJournalEntry}
+      />
     </div>
   );
 }
