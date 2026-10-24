@@ -48,6 +48,15 @@ export default function Footer({ setActiveTab }) {
             <li>
               <button 
                 type="button" 
+                onClick={() => setActiveTab('chat')} 
+                style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}
+              >
+                AI Companion
+              </button>
+            </li>
+            <li>
+              <button 
+                type="button" 
                 onClick={() => setActiveTab('history')} 
                 style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}
               >
@@ -95,7 +104,7 @@ export default function Footer({ setActiveTab }) {
       </div>
       
       <div style={{ maxWidth: '1100px', margin: '2rem auto 0 auto', paddingTop: '1.25rem', borderTop: '1px solid var(--border-subtle)', textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-        HostelWell Prototype (Stage 2) • Designed for privacy and peaceful self-reflection
+        HostelWell • Stage 3 (AI Reflection Companion) • Designed for privacy and peaceful self-reflection
       </div>
     </footer>
   );

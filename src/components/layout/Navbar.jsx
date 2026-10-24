@@ -5,13 +5,15 @@ import {
   PenLine, 
   History, 
   HelpCircle, 
-  ShieldCheck
+  ShieldCheck,
+  MessageSquare
 } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab, hasCheckedInToday }) {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'checkin', label: hasCheckedInToday ? 'Today’s Log' : 'Daily Check-In', icon: PenLine, highlight: !hasCheckedInToday },
+    { id: 'chat', label: 'AI Companion', icon: MessageSquare },
     { id: 'history', label: 'History & Trends', icon: History },
     { id: 'reflections', label: 'Reflections', icon: HelpCircle },
     { id: 'support', label: 'Support & Helplines', icon: HeartHandshake },
@@ -21,8 +23,8 @@ export default function Navbar({ activeTab, setActiveTab, hasCheckedInToday }) {
   return (
     <header className="navbar" role="banner">
       <div className="prototype-banner" role="status">
-        <span className="prototype-badge">Prototype Demo</span>
-        <span>Data is stored in temporary browser memory. No backend or AI services are connected in Stage 2.</span>
+        <span className="prototype-badge">Stage 3 Live</span>
+        <span>Check-in data is in browser memory. AI reflection companion connects locally to the Gemma MoE backend on port 5002.</span>
       </div>
 
       <div className="navbar-inner">

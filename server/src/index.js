@@ -20,11 +20,19 @@ const app = express();
 // 1. Trust proxy headers (useful for rate-limiting behind local dev proxies)
 app.set('trust proxy', 1);
 
-// 2. Strict CORS policy: Allow only the configured frontend origin
+// 2. Strict CORS policy: Allow configured frontend origin and local dev hosts
+const isAllowedOrigin = (origin) => {
+  if (!origin || origin === config.CLIENT_URL) return true;
+  // Authorize local Vite development origins (localhost and 127.0.0.1 on ports 5173-5179)
+  const localDevPattern = /^http:\/\/(localhost|127\.0\.0\.1):(517[3-9]|518\d)$/;
+  return localDevPattern.test(origin);
+};
+
 const corsOptions = {
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps, curl, or server-to-server tests)
-    if (!origin || origin === config.CLIENT_URL) {
+    // or from authorized local development origins
+    if (isAllowedOrigin(origin)) {
       callback(null, true);
     } else {
       const corsError = new Error(`CORS blocked: Origin "${origin}" is not authorized.`);

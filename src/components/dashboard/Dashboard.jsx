@@ -25,7 +25,8 @@ import {
   HelpCircle, 
   PhoneCall, 
   ShieldCheck,
-  RefreshCw
+  RefreshCw,
+  MessageSquare
 } from 'lucide-react';
 import { STATIC_REFLECTION_PROMPTS, getMoodById } from '../../data/mockData';
 
@@ -104,9 +105,17 @@ export default function Dashboard({
                 <button 
                   type="button" 
                   className="btn btn-secondary"
+                  onClick={() => setActiveTab('chat')}
+                >
+                  <MessageSquare size={17} aria-hidden="true" />
+                  <span>Reflect with AI</span>
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-ghost"
                   onClick={() => setActiveTab('history')}
                 >
-                  <span>View Recent Trends</span>
+                  <span>View Trends</span>
                 </button>
               </div>
             </>
@@ -120,6 +129,14 @@ export default function Dashboard({
                 Thank you for taking a moment for yourself. Below is your reflection summary for today. You can review your week or adjust your log anytime.
               </p>
               <div className="hero-actions">
+                <button 
+                  type="button" 
+                  className="btn btn-primary"
+                  onClick={() => setActiveTab('chat')}
+                >
+                  <MessageSquare size={17} aria-hidden="true" />
+                  <span>Reflect with AI Companion</span>
+                </button>
                 <button 
                   type="button" 
                   className="btn btn-secondary"

@@ -24,6 +24,7 @@ import HistoryView from './components/history/HistoryView';
 import ReflectionPrompts from './components/reflection/ReflectionPrompts';
 import SupportResources from './components/resources/SupportResources';
 import PrivacyNotice from './components/privacy/PrivacyNotice';
+import WellnessChat from './components/chat/WellnessChat';
 import { INITIAL_SYNTHETIC_CHECKINS } from './data/mockData';
 import { getTodayDateString } from './utils/dateUtils';
 
@@ -102,6 +103,10 @@ export default function App() {
             onSaveCheckIn={handleSaveCheckIn} 
             setActiveTab={setActiveTab} 
           />
+        )}
+
+        {activeTab === 'chat' && (
+          <WellnessChat setActiveTab={setActiveTab} />
         )}
 
         {activeTab === 'history' && (
