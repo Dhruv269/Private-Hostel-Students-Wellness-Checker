@@ -6,100 +6,100 @@ import {
   AlertTriangle, 
   Building2, 
   Compass, 
-  Clock
+  Clock,
+  Sparkles
 } from 'lucide-react';
 import { VERIFIED_INDIAN_RESOURCES, CAMPUS_SUPPORT_GUIDANCE } from '../../data/mockData';
 
 export default function SupportResources() {
   return (
-    <div>
-      <div style={{ marginBottom: '1.75rem' }}>
-        <h1 style={{ fontSize: '1.75rem', marginBottom: '0.35rem' }}>
+    <div className="support-page-cinematic">
+      <header className="page-cinematic-header">
+        <div className="header-eyebrow">
+          <Sparkles size={14} className="text-emerald-400" aria-hidden="true" />
+          <span>Care Directory</span>
+        </div>
+        <h1 className="header-main-title">
           Verified Support & Campus Helplines (India)
         </h1>
-        <p style={{ color: 'var(--text-secondary)' }}>
-          Real, verified national helplines and practical guidance for hostel students navigating distress, loneliness, or crisis.
+        <p className="header-lead">
+          Verified national helplines and practical advice for hostel students dealing with stress, acute anxiety, or loneliness.
         </p>
-      </div>
+      </header>
 
-      {/* Emergency Alert Banner */}
-      <div style={{ 
-        background: 'var(--color-stress-bg)', 
-        border: '1.5px solid var(--color-stress)', 
-        borderRadius: 'var(--radius-lg)', 
-        padding: '1.25rem 1.5rem', 
-        marginBottom: '2rem',
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: '1rem'
-      }}>
-        <AlertTriangle size={24} style={{ color: 'var(--color-stress)', flexShrink: 0, marginTop: '0.2rem' }} aria-hidden="true" />
-        <div>
-          <h2 style={{ fontSize: '1.1rem', color: '#fecdd3', marginBottom: '0.35rem' }}>
-            Immediate Crisis or Safety Concerns?
-          </h2>
-          <p style={{ fontSize: '0.875rem', color: '#fda4af', margin: '0 0 0.75rem 0', lineHeight: 1.5 }}>
-            HostelWell is a personal self-reflection app and cannot provide live emergency intervention. If you or someone around you is in immediate danger, having thoughts of harming themselves, or in acute medical distress, reach out immediately:
-          </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
-            <a 
-              href="tel:112" 
-              className="btn" 
-              style={{ background: 'var(--color-stress)', color: '#fff', padding: '0.45rem 1rem', fontSize: '0.85rem' }}
-            >
-              <PhoneCall size={16} aria-hidden="true" />
-              <span>Call 112 (National Emergency)</span>
-            </a>
-            <a 
-              href="tel:14416" 
-              className="btn btn-secondary" 
-              style={{ padding: '0.45rem 1rem', fontSize: '0.85rem' }}
-            >
-              <PhoneCall size={16} aria-hidden="true" />
-              <span>Call 14416 (Tele-MANAS Free 24/7)</span>
-            </a>
+      {/* Immediate Emergency Crisis Alert Banner */}
+      <section className="cinematic-card crisis-banner-card" role="alert" aria-labelledby="crisis-banner-title">
+        <div className="crisis-banner-inner">
+          <div className="crisis-banner-icon-box">
+            <AlertTriangle size={24} className="text-coral-400" aria-hidden="true" />
+          </div>
+          <div className="crisis-banner-body">
+            <h2 id="crisis-banner-title" className="crisis-banner-title">
+              Immediate Crisis or Urgent Danger?
+            </h2>
+            <p className="crisis-banner-lead">
+              HostelWell is a personal self-reflection platform and cannot provide live emergency medical intervention. If you or someone around you is in immediate distress or having thoughts of self-harm, connect right now:
+            </p>
+            <div className="crisis-banner-actions">
+              <a 
+                href="tel:112" 
+                className="btn-cinematic-emergency"
+                aria-label="Call National Emergency 112 immediately"
+              >
+                <PhoneCall size={15} aria-hidden="true" />
+                <span>Call 112 (National Police/Ambulance)</span>
+              </a>
+              <a 
+                href="tel:14416" 
+                className="btn-cinematic-primary"
+                aria-label="Call Govt Tele-MANAS at 14416"
+              >
+                <PhoneCall size={15} aria-hidden="true" />
+                <span>Call 14416 (Tele-MANAS 24/7 Free)</span>
+              </a>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Verified Helplines Directory */}
-      <section aria-labelledby="helplines-heading" style={{ marginBottom: '2.5rem' }}>
-        <h2 id="helplines-heading" style={{ fontSize: '1.3rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <ShieldCheck size={20} style={{ color: 'var(--color-primary-light)' }} aria-hidden="true" />
-          <span>Verified National Helplines (India)</span>
-        </h2>
+      <section aria-labelledby="helplines-heading" className="support-directory-section">
+        <div className="section-title-row">
+          <ShieldCheck size={20} className="text-emerald-400" aria-hidden="true" />
+          <h2 id="helplines-heading" className="directory-section-heading">
+            Verified Free 24/7 National Helplines (India)
+          </h2>
+        </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
+        <div className="helpline-cards-grid">
           {VERIFIED_INDIAN_RESOURCES.map((item) => (
-            <div key={item.id} className="helpline-card">
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                  <span className="badge badge-calm" style={{ fontSize: '0.75rem' }}>
-                    {item.type}
-                  </span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <div key={item.id} className="cinematic-card helpline-glass-card">
+              <div className="helpline-card-top">
+                <div className="helpline-badges">
+                  <span className="badge-category-pill">{item.type}</span>
+                  <span className="helpline-hours">
                     <Clock size={12} aria-hidden="true" />
-                    {item.availability}
+                    <span>{item.availability}</span>
                   </span>
                 </div>
 
-                <h3 className="helpline-org">{item.name}</h3>
-                <p className="helpline-desc">{item.description}</p>
+                <h3 className="helpline-name-text">{item.name}</h3>
+                <p className="helpline-desc-text">{item.description}</p>
 
-                <div style={{ marginTop: '0.75rem', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                <div className="helpline-specs-list">
                   <div>🌐 <strong>Languages:</strong> {item.languages}</div>
                   <div>💳 <strong>Cost:</strong> {item.cost}</div>
                 </div>
               </div>
 
               <div className="helpline-contact-row">
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Phone / Dial</div>
-                  <a href={`tel:${item.phone.replace(/[^0-9+]/g, '')}`} className="helpline-number">
+                <div className="helpline-call-group">
+                  <span className="helpline-call-label">Direct 1-Tap Dial</span>
+                  <a href={`tel:${item.phone.replace(/[^0-9+]/g, '')}`} className="helpline-tel-link">
                     {item.phone}
                   </a>
                   {item.altPhone && (
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    <div className="helpline-alt-link">
                       Alt: <a href={`tel:${item.altPhone.replace(/[^0-9+]/g, '')}`}>{item.altPhone}</a>
                     </div>
                   )}
@@ -110,12 +110,11 @@ export default function SupportResources() {
                     href={item.officialLink} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="btn btn-ghost"
-                    style={{ fontSize: '0.78rem', padding: '0.4rem 0.6rem' }}
-                    title={`Visit official site of ${item.name}`}
+                    className="btn-cinematic-ghost btn-sm"
+                    title={`Visit official website of ${item.name}`}
                   >
                     <span>Website</span>
-                    <ExternalLink size={14} aria-hidden="true" />
+                    <ExternalLink size={13} aria-hidden="true" />
                   </a>
                 )}
               </div>
@@ -124,34 +123,32 @@ export default function SupportResources() {
         </div>
       </section>
 
-      {/* Campus Navigation Guidance for Hostel Students */}
-      <section aria-labelledby="campus-guide-heading">
-        <h2 id="campus-guide-heading" style={{ fontSize: '1.3rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Building2 size={20} style={{ color: 'var(--color-accent-lavender)' }} aria-hidden="true" />
-          <span>Navigating Campus Support as a Hostel Resident</span>
-        </h2>
+      {/* Campus Guidance */}
+      <section aria-labelledby="campus-guide-heading" className="support-campus-section">
+        <div className="section-title-row">
+          <Building2 size={20} className="text-emerald-400" aria-hidden="true" />
+          <h2 id="campus-guide-heading" className="directory-section-heading">
+            Navigating Campus Care as a Hostel Resident
+          </h2>
+        </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.25rem' }}>
+        <div className="campus-guide-grid">
           {CAMPUS_SUPPORT_GUIDANCE.map((guide, idx) => (
-            <div key={idx} className="card" style={{ background: 'var(--bg-surface-elevated)' }}>
-              <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
-                {guide.title}
-              </h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
-                {guide.detail}
-              </p>
+            <div key={idx} className="cinematic-card campus-guide-tile">
+              <h3 className="campus-guide-title">{guide.title}</h3>
+              <p className="campus-guide-body">{guide.detail}</p>
             </div>
           ))}
         </div>
 
-        {/* Practical tips for reaching out */}
-        <div className="card" style={{ marginTop: '1.5rem', background: 'rgba(21, 29, 47, 0.6)' }}>
-          <h4 style={{ fontSize: '0.95rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-            <Compass size={18} style={{ color: 'var(--color-primary-light)' }} aria-hidden="true" />
-            <span>Not sure what to say when calling a helpline?</span>
-          </h4>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            You do not need a speech prepared. You can simply say: <em>"Hello, I am a student living in a college hostel. I have been feeling quite stressed with exams/routine lately and just need someone outside my circle to talk to for a few minutes."</em> The counselors are trained specifically to listen without passing judgment or contacting your college.
+        {/* What to Say Advice */}
+        <div className="cinematic-card helpline-advice-card">
+          <div className="advice-header">
+            <Compass size={18} className="text-emerald-400" aria-hidden="true" />
+            <h3 className="advice-title">Unsure what to say when calling a counselor?</h3>
+          </div>
+          <p className="advice-body">
+            You do not need an agenda. You can say: <em>"Hi, I'm a student living in a campus hostel. I've been feeling overwhelmed with my schedule lately and just wanted someone to talk to for a few minutes."</em> Helplines are anonymous and will not notify your university.
           </p>
         </div>
       </section>

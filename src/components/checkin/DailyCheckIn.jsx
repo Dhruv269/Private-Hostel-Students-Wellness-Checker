@@ -1,73 +1,70 @@
-/**
- * DailyCheckIn.jsx - Daily Wellness Check-In Form & Success Feedback
- * 
- * HOW THIS COMPONENT WORKS:
- * 1. Form State Management:
- *    - Tracks user inputs locally using React's `useState`:
- *      `mood` (string), `stress` (1-5), `energy` (1-5), `note` (string).
- *    - If the user already checked in today (`todayCheckIn` prop exists),
- *      the form is pre-populated with their existing values so they can edit.
- * 2. Validation:
- *    - Mood is required. If the student clicks Submit without picking a mood,
- *      we set an error message and cancel submission.
- * 3. Saving & "Lifting State Up":
- *    - When valid, the component creates a complete `newRecord` object and calls
- *      `onSaveCheckIn(newRecord)`. This notifies the parent (`App.jsx`) to update
- *      the global `checkIns` array.
- * 4. Conditional Rendering:
- *    - If `isSubmitted === true`, it displays the clean success card instead of the form.
- */
-
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   CheckCircle2, 
   AlertCircle, 
   Lock, 
   ArrowRight,
   RotateCcw,
-  Sparkles
+  Sparkles,
+  Smile,
+  Meh,
+  CloudRain,
+  Flame
 } from 'lucide-react';
+import gsap from 'gsap';
 import { MOOD_DEFINITIONS, STRESS_LEVELS, ENERGY_LEVELS, getMoodById } from '../../data/mockData';
 import { getTodayDateString } from '../../utils/dateUtils';
+
+// Professional icon mapping to avoid emoji-only interface
+const MOOD_ICONS = {
+  great: Sparkles,
+  good: Smile,
+  okay: Meh,
+  low: CloudRain,
+  overwhelmed: Flame
+};
 
 export default function DailyCheckIn({ 
   todayCheckIn, 
   onSaveCheckIn, 
   setActiveTab 
 }) {
-  // Local form field state: initialized with today's values if editing, or sensible defaults
   const [mood, setMood] = useState(todayCheckIn ? todayCheckIn.mood : '');
   const [stress, setStress] = useState(todayCheckIn ? todayCheckIn.stress : 3);
   const [energy, setEnergy] = useState(todayCheckIn ? todayCheckIn.energy : 3);
   const [note, setNote] = useState(todayCheckIn ? todayCheckIn.note : '');
 
-  // UI state for errors and success screen toggle
   const [error, setError] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  /**
-   * Form Submission Handler:
-   * 1. Validates required fields (mood must be selected).
-   * 2. Constructs a clean record object with today's date and a timestamp.
-   * 3. Calls `onSaveCheckIn` (callback passed down from App.jsx).
-   * 4. Flips `isSubmitted` to true to show the success confirmation screen.
-   */
+  const successRef = useRef(null);
+  const formRef = useRef(null);
+
+  // GSAP animation for success confirmation view
+  useEffect(() => {
+    if (isSubmitted && successRef.current) {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      gsap.from(successRef.current, {
+        opacity: 0,
+        y: 24,
+        scale: 0.96,
+        duration: 0.7,
+        ease: 'power3.out'
+      });
+    }
+  }, [isSubmitted]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Validation check: Mood is mandatory
     if (!mood) {
-      setError('Please choose a mood that best reflects how you feel right now.');
+      setError('Please choose a state of mind that best reflects how you feel right now.');
       return;
     }
 
-    // Clear any previous error
     setError('');
-
-    // Look up human-readable label for the mood
     const moodObj = getMoodById(mood);
 
-    // Build the complete check-in record
     const newRecord = {
       id: todayCheckIn?.id || `session-${Date.now()}`,
       date: getTodayDateString(),
@@ -76,124 +73,102 @@ export default function DailyCheckIn({
       stress: Number(stress),
       energy: Number(energy),
       note: note.trim(),
-      isSynthetic: false, // User-submitted check-in for this session
+      isSynthetic: false,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
-    // Send the record up to App.jsx to update the application-level state
     onSaveCheckIn(newRecord);
-
-    // Switch to the confirmation state
     setIsSubmitted(true);
   };
 
-  /**
-   * Reset to allow the user to make edits to today's log
-   */
   const handleEditAgain = () => {
     setIsSubmitted(false);
   };
 
   // ==========================================================================
-  // VIEW A: Success Confirmation State (shown after saving)
+  // VIEW A: Success Confirmation State (GSAP Animated)
   // ==========================================================================
   if (isSubmitted) {
     const selectedMoodObj = getMoodById(mood);
+    const MoodIcon = MOOD_ICONS[mood] || Sparkles;
 
     return (
-      <div className="checkin-form-container">
-        <div className="card" style={{ textAlign: 'center', padding: '2.5rem 1.5rem' }}>
-          <div style={{ 
-            width: '64px', 
-            height: '64px', 
-            borderRadius: '50%', 
-            background: 'var(--color-success-bg)', 
-            color: 'var(--color-success)', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            margin: '0 auto 1.25rem auto' 
-          }}>
-            <CheckCircle2 size={36} aria-hidden="true" />
+      <div className="checkin-container-focused">
+        <div className="cinematic-card checkin-success-modal" ref={successRef}>
+          <div className="success-emblem-wrapper">
+            <CheckCircle2 size={36} className="text-emerald-400" aria-hidden="true" />
           </div>
 
-          <span className="badge badge-live" style={{ marginBottom: '0.75rem' }}>
-            Check-In Saved (In-Memory Session)
-          </span>
+          <div className="success-badge-row">
+            <span className="badge-emerald-subtle">
+              Check-In Recorded (Current Session)
+            </span>
+          </div>
 
-          <h2 style={{ fontSize: '1.6rem', marginBottom: '0.5rem' }}>
-            Thank you for checking in today!
-          </h2>
-          <p style={{ maxWidth: '520px', margin: '0 auto 1.5rem auto' }}>
-            Noticing your state of mind is a valuable personal boundary in busy hostel life. Your log has been recorded for this session.
+          <h1 className="success-modal-title">
+            Your daily check-in is logged.
+          </h1>
+          <p className="success-modal-desc">
+            Noticing your mental state is a powerful practice amidst the pace of hostel life. Your log is preserved in browser memory.
           </p>
 
-          {/* Quick Summary Box */}
-          <div style={{ 
-            background: 'var(--bg-surface-elevated)', 
-            borderRadius: 'var(--radius-lg)', 
-            padding: '1.25rem', 
-            maxWidth: '480px', 
-            margin: '0 auto 1.75rem auto',
-            border: '1px solid var(--border-subtle)',
-            textAlign: 'left'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-              <span style={{ fontSize: '1.75rem' }}>{selectedMoodObj?.emoji}</span>
-              <div>
-                <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Mood: {selectedMoodObj?.label}</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{selectedMoodObj?.description}</div>
+          <div className="success-metric-summary">
+            <div className="success-mood-item">
+              <div className="success-mood-icon-box">
+                <MoodIcon size={22} className="text-emerald-400" aria-hidden="true" />
+              </div>
+              <div className="success-mood-meta">
+                <span className="success-mood-label">Mood: {selectedMoodObj?.label}</span>
+                <span className="success-mood-desc">{selectedMoodObj?.description}</span>
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', margin: '0.75rem 0', paddingTop: '0.75rem', borderTop: '1px solid var(--border-subtle)' }}>
-              <div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Stress Rating</div>
-                <div style={{ fontWeight: 700, color: stress >= 4 ? 'var(--color-stress)' : 'var(--text-primary)' }}>
-                  Level {stress} / 5
-                </div>
+            <div className="success-scales-row">
+              <div className="success-scale-chip">
+                <span className="scale-chip-label">Stress</span>
+                <span className={`scale-chip-val ${stress >= 4 ? 'val-stress-high' : 'val-stress-normal'}`}>
+                  {stress} / 5
+                </span>
               </div>
-              <div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Energy Rating</div>
-                <div style={{ fontWeight: 700, color: 'var(--color-primary-light)' }}>
-                  Level {energy} / 5
-                </div>
+              <div className="success-scale-chip">
+                <span className="scale-chip-label">Energy</span>
+                <span className="scale-chip-val val-energy">
+                  {energy} / 5
+                </span>
               </div>
             </div>
 
             {note.trim() && (
-              <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-subtle)' }}>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.25rem' }}>Your Note</div>
-                <div style={{ fontStyle: 'italic', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                  "{note.trim()}"
-                </div>
+              <div className="success-note-display">
+                <span className="success-note-label">Personal Reflection:</span>
+                <p className="success-note-body">"{note.trim()}"</p>
               </div>
             )}
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <div className="success-button-group">
             <button
               type="button"
-              className="btn btn-primary"
+              className="btn-cinematic-primary"
               onClick={() => setActiveTab('dashboard')}
             >
               <span>Back to Dashboard</span>
-              <ArrowRight size={16} aria-hidden="true" />
+              <ArrowRight size={15} aria-hidden="true" />
             </button>
             <button
               type="button"
-              className="btn btn-secondary"
-              onClick={() => setActiveTab('history')}
+              className="btn-cinematic-secondary"
+              onClick={() => setActiveTab('chat')}
             >
-              <span>View Trends & History</span>
+              <span>Talk with AI Companion</span>
             </button>
             <button
               type="button"
-              className="btn btn-ghost"
+              className="btn-cinematic-ghost"
               onClick={handleEditAgain}
             >
-              <RotateCcw size={15} aria-hidden="true" />
-              <span>Make Changes</span>
+              <RotateCcw size={14} aria-hidden="true" />
+              <span>Adjust Log</span>
             </button>
           </div>
         </div>
@@ -205,58 +180,55 @@ export default function DailyCheckIn({
   // VIEW B: The Check-In Input Form
   // ==========================================================================
   return (
-    <div className="checkin-form-container">
-      <div style={{ marginBottom: '1.75rem' }}>
-        <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>
+    <div className="checkin-container-focused" ref={formRef}>
+      <header className="page-cinematic-header">
+        <div className="header-eyebrow">
+          <Sparkles size={14} className="text-emerald-400" aria-hidden="true" />
+          <span>Mindful Pause</span>
+        </div>
+        <h1 className="header-main-title">
           Daily Wellness Check-In
         </h1>
-        <p style={{ color: 'var(--text-secondary)' }}>
-          Take a quiet moment away from academics and roommates. How is your body and mind feeling right now?
+        <p className="header-lead">
+          Take a quiet moment away from lectures, mess noise, and deadlines. Record how your mind and body feel right now.
         </p>
-      </div>
+      </header>
 
-      {/* Accessible Error Alert (Rendered only when validation fails) */}
       {error && (
-        <div style={{ 
-          background: 'var(--color-stress-bg)', 
-          border: '1px solid var(--color-stress)', 
-          borderRadius: 'var(--radius-md)', 
-          padding: '0.85rem 1rem', 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '0.65rem', 
-          marginBottom: '1.5rem',
-          color: '#fecdd3'
-        }} role="alert">
-          <AlertCircle size={20} style={{ color: 'var(--color-stress)', flexShrink: 0 }} aria-hidden="true" />
-          <span style={{ fontSize: '0.875rem' }}>{error}</span>
+        <div className="cinematic-alert-error" role="alert">
+          <AlertCircle size={18} className="alert-error-icon" aria-hidden="true" />
+          <span>{error}</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} noValidate>
+      <form onSubmit={handleSubmit} noValidate className="checkin-form-stack">
         {/* Field 1: Overall Mood Selection */}
-        <fieldset className="form-section card" style={{ border: 'none', padding: '1.5rem' }}>
-          <legend className="form-label" style={{ fontSize: '1.1rem' }}>
-            1. Overall Mood <span style={{ color: 'var(--color-stress)' }}>*</span>
+        <fieldset className="cinematic-card form-section-card">
+          <legend className="form-section-legend">
+            1. State of Mind <span className="legend-required">*</span>
           </legend>
-          <p className="form-hint">
-            Pick the descriptor that feels closest to your mental state today.
+          <p className="form-section-hint">
+            Select the state that best aligns with your inner climate today.
           </p>
 
-          <div className="mood-grid" role="radiogroup" aria-required="true">
+          <div className="mood-tile-grid" role="radiogroup" aria-required="true">
             {MOOD_DEFINITIONS.map((item) => {
               const isSelected = mood === item.id;
+              const MoodIcon = MOOD_ICONS[item.id] || Sparkles;
               return (
                 <button
                   key={item.id}
                   type="button"
                   role="radio"
                   aria-checked={isSelected}
-                  className={`mood-option ${isSelected ? 'selected' : ''}`}
+                  className={`mood-tile-btn ${isSelected ? 'is-selected' : ''}`}
                   onClick={() => setMood(item.id)}
                 >
-                  <span className="mood-emoji" aria-hidden="true">{item.emoji}</span>
-                  <span className="mood-text">{item.label}</span>
+                  <div className="mood-tile-icon-box">
+                    <MoodIcon size={20} aria-hidden="true" />
+                  </div>
+                  <span className="mood-tile-label">{item.label}</span>
+                  <span className="mood-tile-subtext">{item.description}</span>
                 </button>
               );
             })}
@@ -264,53 +236,53 @@ export default function DailyCheckIn({
         </fieldset>
 
         {/* Field 2: Stress Rating (1 to 5) */}
-        <fieldset className="form-section card" style={{ border: 'none', padding: '1.5rem', marginTop: '1.25rem' }}>
-          <legend className="form-label" style={{ fontSize: '1.1rem' }}>
-            2. Stress & Pressure Level (1 to 5)
+        <fieldset className="cinematic-card form-section-card">
+          <legend className="form-section-legend">
+            2. Academic & Living Stress (1 to 5)
           </legend>
-          <p className="form-hint">
-            Academic deadlines, mess issues, exams, or personal concerns.
+          <p className="form-section-hint">
+            Exams, assignment pressure, hostel environment, or roommate friction.
           </p>
 
-          <div className="scale-container">
-            <div className="scale-buttons" role="radiogroup" aria-label="Stress level from 1 to 5">
+          <div className="scale-control-wrapper">
+            <div className="scale-button-grid" role="radiogroup" aria-label="Stress level from 1 to 5">
               {STRESS_LEVELS.map((item) => {
                 const isSelected = stress === item.level;
-                const isStressful = item.level >= 4;
+                const isHigh = item.level >= 4;
                 return (
                   <button
                     key={item.level}
                     type="button"
                     role="radio"
                     aria-checked={isSelected}
-                    className={`scale-btn ${isSelected ? (isStressful ? 'selected-stress' : 'selected') : ''}`}
+                    className={`scale-segment-btn ${isSelected ? (isHigh ? 'is-selected-stress' : 'is-selected') : ''}`}
                     onClick={() => setStress(item.level)}
                   >
-                    <span className="scale-number">{item.level}</span>
-                    <span className="scale-tag">{item.label}</span>
+                    <span className="segment-number">{item.level}</span>
+                    <span className="segment-label">{item.label}</span>
                   </button>
                 );
               })}
             </div>
-            <div className="scale-labels">
+            <div className="scale-axis-labels">
               <span>1: Very Relaxed</span>
-              <span>3: Moderate Stress</span>
-              <span>5: Overwhelming</span>
+              <span>3: Manageable Workload</span>
+              <span>5: Severe Tension</span>
             </div>
           </div>
         </fieldset>
 
         {/* Field 3: Energy Rating (1 to 5) */}
-        <fieldset className="form-section card" style={{ border: 'none', padding: '1.5rem', marginTop: '1.25rem' }}>
-          <legend className="form-label" style={{ fontSize: '1.1rem' }}>
-            3. Physical & Mental Energy Level (1 to 5)
+        <fieldset className="cinematic-card form-section-card">
+          <legend className="form-section-legend">
+            3. Physical & Mental Stamina (1 to 5)
           </legend>
-          <p className="form-hint">
-            Sleep quality, physical stamina, and ability to focus today.
+          <p className="form-section-hint">
+            Rest quality, physical energy, and capacity to focus throughout the day.
           </p>
 
-          <div className="scale-container">
-            <div className="scale-buttons" role="radiogroup" aria-label="Energy level from 1 to 5">
+          <div className="scale-control-wrapper">
+            <div className="scale-button-grid" role="radiogroup" aria-label="Energy level from 1 to 5">
               {ENERGY_LEVELS.map((item) => {
                 const isSelected = energy === item.level;
                 return (
@@ -319,62 +291,59 @@ export default function DailyCheckIn({
                     type="button"
                     role="radio"
                     aria-checked={isSelected}
-                    className={`scale-btn ${isSelected ? 'selected' : ''}`}
+                    className={`scale-segment-btn ${isSelected ? 'is-selected' : ''}`}
                     onClick={() => setEnergy(item.level)}
                   >
-                    <span className="scale-number">{item.level}</span>
-                    <span className="scale-tag">{item.label}</span>
+                    <span className="segment-number">{item.level}</span>
+                    <span className="segment-label">{item.label}</span>
                   </button>
                 );
               })}
             </div>
-            <div className="scale-labels">
+            <div className="scale-axis-labels">
               <span>1: Exhausted</span>
-              <span>3: Normal Battery</span>
-              <span>5: High Energy</span>
+              <span>3: Balanced Battery</span>
+              <span>5: Fully Charged</span>
             </div>
           </div>
         </fieldset>
 
         {/* Field 4: Optional Personal Note */}
-        <div className="form-section card" style={{ padding: '1.5rem', marginTop: '1.25rem' }}>
-          <label htmlFor="checkin-note-input" className="form-label" style={{ fontSize: '1.1rem' }}>
-            4. Personal Reflection Note <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 400 }}>(Optional)</span>
+        <div className="cinematic-card form-section-card">
+          <label htmlFor="checkin-note-input" className="form-section-legend">
+            4. Personal Reflection Note <span className="legend-optional">(Optional)</span>
           </label>
-          <p className="form-hint">
-            Write down whatever is on your mind—a difficult class, an interaction with a hostelmate, or something you are grateful for.
+          <p className="form-section-hint">
+            Jot down a fleeting thought: a lab that went well, a conversation, or something you are grateful for.
           </p>
 
           <textarea
             id="checkin-note-input"
-            className="textarea-field"
+            className="cinematic-textarea"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="e.g. Felt tired during the 9 AM lab. Had tea with roommate in evening which helped me reset."
+            placeholder="e.g., Felt groggy in the 8:30 AM lecture, but going for a walk around the hostel grounds cleared my head..."
             maxLength={500}
             rows={4}
           />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
-            {note.length} / 500 characters
-          </div>
-
-          <div className="privacy-helper-box">
-            <Lock size={16} style={{ color: 'var(--color-primary-light)', flexShrink: 0, marginTop: '0.1rem' }} aria-hidden="true" />
-            <div>
-              <strong>Privacy Notice for Prototype:</strong> This check-in stays in browser memory only during this demo session. Do not include sensitive medical diagnoses, passwords, or personal identity numbers.
+          <div className="textarea-footer-meta">
+            <div className="privacy-pill-subtle">
+              <Lock size={13} aria-hidden="true" />
+              <span>In-Memory RAM Only</span>
             </div>
+            <span className="char-count-text">{note.length} / 500</span>
           </div>
         </div>
 
-        {/* Form Actions */}
-        <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', alignItems: 'center' }}>
-          <button type="submit" className="btn btn-primary" style={{ padding: '0.75rem 1.75rem', fontSize: '1rem' }}>
-            <Sparkles size={18} aria-hidden="true" />
-            <span>Save Check-In</span>
+        {/* Submit Action */}
+        <div className="form-submit-row">
+          <button type="submit" className="btn-cinematic-primary btn-lg">
+            <Sparkles size={16} aria-hidden="true" />
+            <span>Save Today's Reflection</span>
           </button>
           <button
             type="button"
-            className="btn btn-ghost"
+            className="btn-cinematic-ghost"
             onClick={() => setActiveTab('dashboard')}
           >
             Cancel

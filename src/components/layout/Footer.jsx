@@ -1,37 +1,44 @@
 import React from 'react';
-import { Shield } from 'lucide-react';
+import { Shield, PhoneCall, Sun, Moon, Sparkles } from 'lucide-react';
 
-export default function Footer({ setActiveTab }) {
+const CURRENT_YEAR = new Date().getFullYear();
+
+export default function Footer({ setActiveTab, theme = 'dark', toggleTheme }) {
   return (
-    <footer className="footer" role="contentinfo">
-      <div className="footer-inner">
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)', fontWeight: 600 }}>
-            <span>🌱 HostelWell</span>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Student Reflection Hub</span>
+    <footer className="footer-cinematic" role="contentinfo">
+      <div className="footer-cinematic-inner">
+        {/* Brand & Purpose Column */}
+        <div className="footer-col-main">
+          <div className="footer-brand-header">
+            <div className="footer-brand-emblem" aria-hidden="true">
+              <Sparkles size={16} />
+            </div>
+            <span className="footer-brand-title">HostelWell</span>
+            <span className="footer-brand-subtitle">Private Student Sanctuary</span>
           </div>
-          <p style={{ fontSize: '0.875rem', marginBottom: '0.85rem' }}>
-            A private, non-clinical wellness companion designed to help hostel students in India notice patterns in their daily mood, energy, and stress.
+          <p className="footer-desc">
+            An in-memory, private wellness sanctuary designed for hostel students across India. Reflect on daily pressures, track inner stamina, and notice emotional patterns without surveillance.
           </p>
           <div className="footer-disclaimer-box">
-            <strong style={{ color: 'var(--color-warning)', display: 'flex', alignItems: 'center', gap: '0.35rem', marginBottom: '0.35rem' }}>
+            <div className="footer-disclaimer-title">
               <Shield size={14} aria-hidden="true" />
-              Non-Medical & Non-Diagnostic Disclaimer
-            </strong>
-            <p style={{ fontSize: '0.8rem', margin: 0 }}>
-              This application is strictly for personal self-reflection. It does not diagnose mental health conditions, provide clinical treatment, or replace certified mental health professionals.
+              <span>Non-Medical & Non-Diagnostic Disclaimer</span>
+            </div>
+            <p className="footer-disclaimer-text">
+              HostelWell is an autonomous self-reflection tool. It does not provide clinical diagnoses, psychiatric treatment, or replace professional mental health care.
             </p>
           </div>
         </div>
 
-        <div>
-          <h4 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>Quick Navigation</h4>
-          <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.45rem', padding: 0 }}>
+        {/* Quick Navigation Column */}
+        <div className="footer-col-nav">
+          <h3 className="footer-col-heading">Navigation</h3>
+          <ul className="footer-nav-list">
             <li>
               <button 
                 type="button" 
                 onClick={() => setActiveTab('dashboard')} 
-                style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}
+                className="footer-link-btn"
               >
                 Dashboard
               </button>
@@ -40,7 +47,7 @@ export default function Footer({ setActiveTab }) {
               <button 
                 type="button" 
                 onClick={() => setActiveTab('checkin')} 
-                style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}
+                className="footer-link-btn"
               >
                 Daily Check-In
               </button>
@@ -49,7 +56,7 @@ export default function Footer({ setActiveTab }) {
               <button 
                 type="button" 
                 onClick={() => setActiveTab('chat')} 
-                style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}
+                className="footer-link-btn"
               >
                 AI Companion
               </button>
@@ -58,7 +65,7 @@ export default function Footer({ setActiveTab }) {
               <button 
                 type="button" 
                 onClick={() => setActiveTab('history')} 
-                style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}
+                className="footer-link-btn"
               >
                 Trends & History
               </button>
@@ -66,8 +73,17 @@ export default function Footer({ setActiveTab }) {
             <li>
               <button 
                 type="button" 
+                onClick={() => setActiveTab('reflections')} 
+                className="footer-link-btn"
+              >
+                Reflection Prompts
+              </button>
+            </li>
+            <li>
+              <button 
+                type="button" 
                 onClick={() => setActiveTab('privacy')} 
-                style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}
+                className="footer-link-btn"
               >
                 Privacy & Data Storage
               </button>
@@ -75,36 +91,63 @@ export default function Footer({ setActiveTab }) {
           </ul>
         </div>
 
-        <div>
-          <h4 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>Verified Indian Helplines</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-            {/* Actionable tel: links enable 1-tap dialing on mobile devices in case of urgent distress */}
-            <div>
-              <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.85rem' }}>Tele-MANAS (24/7)</div>
-              <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>
-                <a href="tel:14416" style={{ color: 'var(--color-primary-light)' }}>14416</a>
-                <span style={{ color: 'var(--text-muted)' }}> / </span>
-                <a href="tel:18008914416" style={{ color: 'var(--color-primary-light)' }}>1800 891 4416</a>
+        {/* Verified Helplines Column */}
+        <div className="footer-col-support">
+          <h3 className="footer-col-heading">Verified Helplines (India 24/7)</h3>
+          <div className="footer-helpline-stack">
+            <div className="footer-helpline-card">
+              <div className="footer-helpline-name">Govt. Tele-MANAS (Free 24/7)</div>
+              <div className="footer-helpline-numbers">
+                <a href="tel:14416" className="footer-helpline-link" aria-label="Call Tele-MANAS at 14416">
+                  <PhoneCall size={12} aria-hidden="true" /> 14416
+                </a>
+                <span className="footer-divider">•</span>
+                <a href="tel:18008914416" className="footer-helpline-link" aria-label="Call Tele-MANAS at 1800 891 4416">
+                  1800 891 4416
+                </a>
               </div>
             </div>
-            <div>
-              <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.85rem' }}>KIRAN (Govt Helpline)</div>
-              <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>
-                <a href="tel:18005990019" style={{ color: 'var(--color-primary-light)' }}>1800-599-0019</a>
+
+            <div className="footer-helpline-card">
+              <div className="footer-helpline-name">KIRAN Mental Health Line</div>
+              <div className="footer-helpline-numbers">
+                <a href="tel:18005990019" className="footer-helpline-link" aria-label="Call KIRAN at 1800 599 0019">
+                  <PhoneCall size={12} aria-hidden="true" /> 1800-599-0019
+                </a>
               </div>
             </div>
-            <div>
-              <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.85rem' }}>National Emergency</div>
-              <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>
-                <a href="tel:112" style={{ color: 'var(--color-stress)' }}>112</a>
+
+            <div className="footer-helpline-card footer-helpline-emergency">
+              <div className="footer-helpline-name">National Emergency Services</div>
+              <div className="footer-helpline-numbers">
+                <a href="tel:112" className="footer-helpline-link" aria-label="Call National Emergency 112">
+                  <PhoneCall size={12} aria-hidden="true" /> 112 (Police / Ambulance)
+                </a>
               </div>
             </div>
           </div>
         </div>
       </div>
-      
-      <div style={{ maxWidth: '1100px', margin: '2rem auto 0 auto', paddingTop: '1.25rem', borderTop: '1px solid var(--border-subtle)', textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-        HostelWell • Stage 3 (AI Reflection Companion) • Designed for privacy and peaceful self-reflection
+
+      {/* Footer Bottom Bar */}
+      <div className="footer-bottom-bar">
+        <div className="footer-bottom-inner">
+          <p className="footer-copyright">
+            © {CURRENT_YEAR} HostelWell. Dedicated to student mental equilibrium across India.
+          </p>
+
+          <div className="footer-bottom-actions">
+            <button
+              type="button"
+              className="footer-theme-toggle"
+              onClick={toggleTheme}
+              aria-label={theme === 'dark' ? "Switch to light theme" : "Switch to dark theme"}
+            >
+              {theme === 'dark' ? <Sun size={14} aria-hidden="true" /> : <Moon size={14} aria-hidden="true" />}
+              <span>{theme === 'dark' ? 'Light Theme' : 'Dark Theme'}</span>
+            </button>
+          </div>
+        </div>
       </div>
     </footer>
   );

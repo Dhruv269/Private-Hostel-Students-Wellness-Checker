@@ -1,19 +1,4 @@
-/**
- * Dashboard.jsx - Main Student Landing Screen
- * 
- * HOW THIS COMPONENT WORKS:
- * 1. Checks `todayCheckIn` (passed as a prop from App.jsx):
- *    - If null/undefined: Displays a welcoming invitation to complete today's check-in.
- *    - If defined: Displays a confirmation banner with today's mood, stress, energy, and note.
- * 2. Computes 7-Day Averages:
- *    - Takes the 7 most recent check-ins and calculates average stress and energy.
- * 3. Shows Today's Curated Thought:
- *    - Rotates through pre-written reflection questions using local state (`promptIndex`).
- * 4. Displays Quick Support Card:
- *    - Direct highlight for Tele-MANAS (14416) for instant, 24/7 access to free help.
- */
-
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Sparkles, 
   PenLine, 
@@ -24,19 +9,31 @@ import {
   ArrowRight, 
   HelpCircle, 
   PhoneCall, 
-  ShieldCheck,
-  RefreshCw,
-  MessageSquare
+  RefreshCw, 
+  MessageSquare, 
+  Clock, 
+  BarChart3, 
+  ShieldCheck, 
+  Smile, 
+  Meh, 
+  CloudRain, 
+  Flame 
 } from 'lucide-react';
+import gsap from 'gsap';
+import WellnessOrb3D from '../common/WellnessOrb3D';
 import { STATIC_REFLECTION_PROMPTS, getMoodById } from '../../data/mockData';
+import { getTodayDateString, formatDisplayDate, getShortDayName } from '../../utils/dateUtils';
+
+const MOOD_ICONS = {
+  great: Sparkles,
+  good: Smile,
+  okay: Meh,
+  low: CloudRain,
+  overwhelmed: Flame
+};
 
 /**
- * Beginner-friendly helper: Calculates the arithmetic average of a numeric property (stress or energy).
- * Using a simple loop instead of an accumulator reduce makes this logic easy to trace and explain.
- * 
- * @param {Array} list - Array of check-in objects
- * @param {string} property - The property key to average (e.g. 'stress' or 'energy')
- * @returns {string} Average rounded to 1 decimal place, or 'N/A' if empty
+ * Calculates arithmetic average of a numeric property (stress or energy).
  */
 function calculateAverage(list, property) {
   if (!list || list.length === 0) return 'N/A';
@@ -52,323 +49,491 @@ export default function Dashboard({
   todayCheckIn, 
   setActiveTab 
 }) {
-  // State for cycling through pre-written reflection prompts
   const [promptIndex, setPromptIndex] = useState(0);
+  const dashboardRef = useRef(null);
 
-  // Take up to the 7 most recent check-in records for weekly metrics
+  // Take up to 7 most recent check-in records for weekly metrics
   const recentCheckIns = checkIns.slice(-7);
   const avgStress = calculateAverage(recentCheckIns, 'stress');
   const avgEnergy = calculateAverage(recentCheckIns, 'energy');
 
-  // Cycle to next prompt: the modulo (%) operator loops back to 0 when reaching the end of the array
+  // Compute 7-day dominant mood for the mood summary
+  const moodFrequencies = {};
+  for (const c of recentCheckIns) {
+    if (c.mood) {
+      moodFrequencies[c.mood] = (moodFrequencies[c.mood] || 0) + 1;
+    }
+  }
+
+  let dominantMoodId = 'good';
+  let maxCount = 0;
+  for (const [id, count] of Object.entries(moodFrequencies)) {
+    if (count > maxCount) {
+      maxCount = count;
+      dominantMoodId = id;
+    }
+  }
+  const dominantMoodObj = getMoodById(dominantMoodId);
+  const DominantMoodIcon = MOOD_ICONS[dominantMoodId] || Smile;
+
   const currentPrompt = STATIC_REFLECTION_PROMPTS[promptIndex % STATIC_REFLECTION_PROMPTS.length];
 
   const handleNextPrompt = () => {
     setPromptIndex((prevIndex) => (prevIndex + 1) % STATIC_REFLECTION_PROMPTS.length);
   };
 
-  // Look up today's mood details (label, emoji, description)
   const todayMoodObj = todayCheckIn ? getMoodById(todayCheckIn.mood) : null;
+  const todayFormatted = formatDisplayDate(getTodayDateString());
+
+  // Purposeful GSAP Hero & Bento Entrance Animations (Robust fromTo with clearProps)
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        '.gsap-hero-badge', 
+        { opacity: 0, y: -10 }, 
+        { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out', clearProps: 'all' }
+      );
+      gsap.fromTo(
+        '.gsap-hero-title', 
+        { opacity: 0, y: 15 }, 
+        { opacity: 1, y: 0, duration: 0.6, delay: 0.05, ease: 'power3.out', clearProps: 'all' }
+      );
+      gsap.fromTo(
+        '.gsap-hero-desc', 
+        { opacity: 0, y: 12 }, 
+        { opacity: 1, y: 0, duration: 0.6, delay: 0.1, ease: 'power3.out', clearProps: 'all' }
+      );
+      gsap.fromTo(
+        '.gsap-hero-actions', 
+        { opacity: 0, y: 10 }, 
+        { opacity: 1, y: 0, duration: 0.6, delay: 0.15, ease: 'power3.out', clearProps: 'all' }
+      );
+      gsap.fromTo(
+        '.gsap-hero-orb', 
+        { opacity: 0, scale: 0.92 }, 
+        { opacity: 1, scale: 1, duration: 0.8, delay: 0.05, ease: 'power2.out', clearProps: 'all' }
+      );
+      // Bento cards gently rise without zero-opacity locks so they are ALWAYS visible
+      gsap.fromTo(
+        '.gsap-bento-card',
+        { y: 14 },
+        {
+          y: 0,
+          stagger: 0.04,
+          duration: 0.5,
+          delay: 0.15,
+          ease: 'power2.out',
+          clearProps: 'transform'
+        }
+      );
+    }, dashboardRef);
+
+    return () => ctx.revert();
+  }, []);
 
   return (
-    <div className="dashboard-grid">
+    <div className="dashboard-cinematic-wrapper" ref={dashboardRef}>
       {/* 
         ========================================================================
-        HERO SECTION: Conditionally renders based on whether today is logged
+        HERO SECTION: Asymmetric Composition with 3D Centerpiece & Date Header
         ========================================================================
       */}
-      <section className="hero-banner" aria-labelledby="dashboard-hero-title">
-        <div className="hero-content">
-          <div className="hero-greeting">
-            <Sparkles size={16} aria-hidden="true" />
-            <span>Hostel Wellness Space</span>
-          </div>
-
-          {!todayCheckIn ? (
-            /* State A: User has NOT checked in yet today */
-            <>
-              <h1 id="dashboard-hero-title" className="hero-title">
-                How is hostel life treating you today?
-              </h1>
-              <p className="hero-desc">
-                Take 60 seconds to note your mood, stress level, and energy. Regular self-reflection helps you catch burnout early and notice study patterns without judgment.
-              </p>
-              <div className="hero-actions">
-                <button 
-                  type="button" 
-                  className="btn btn-primary"
-                  onClick={() => setActiveTab('checkin')}
-                >
-                  <PenLine size={18} aria-hidden="true" />
-                  <span>Record Today's Check-In</span>
-                </button>
-                <button 
-                  type="button" 
-                  className="btn btn-secondary"
-                  onClick={() => setActiveTab('chat')}
-                >
-                  <MessageSquare size={17} aria-hidden="true" />
-                  <span>Reflect with AI</span>
-                </button>
-                <button 
-                  type="button" 
-                  className="btn btn-ghost"
-                  onClick={() => setActiveTab('history')}
-                >
-                  <span>View Trends</span>
-                </button>
-              </div>
-            </>
-          ) : (
-            /* State B: User HAS already checked in today */
-            <>
-              <h1 id="dashboard-hero-title" className="hero-title">
-                You're checked in for today 🌱
-              </h1>
-              <p className="hero-desc">
-                Thank you for taking a moment for yourself. Below is your reflection summary for today. You can review your week or adjust your log anytime.
-              </p>
-              <div className="hero-actions">
-                <button 
-                  type="button" 
-                  className="btn btn-primary"
-                  onClick={() => setActiveTab('chat')}
-                >
-                  <MessageSquare size={17} aria-hidden="true" />
-                  <span>Reflect with AI Companion</span>
-                </button>
-                <button 
-                  type="button" 
-                  className="btn btn-secondary"
-                  onClick={() => setActiveTab('checkin')}
-                >
-                  <PenLine size={16} aria-hidden="true" />
-                  <span>Update Today's Log</span>
-                </button>
-                <button 
-                  type="button" 
-                  className="btn btn-ghost"
-                  onClick={() => setActiveTab('history')}
-                  style={{ color: 'var(--text-primary)' }}
-                >
-                  <span>See History & Trends</span>
-                  <ArrowRight size={16} aria-hidden="true" />
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </section>
-
-      {/* 
-        ========================================================================
-        TODAY'S SUMMARY CARD: Shown only when user has completed today's log
-        ========================================================================
-      */}
-      {todayCheckIn && (
-        <section className="today-summary-card" aria-label="Today's check-in summary">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-              <CheckCircle2 size={22} style={{ color: 'var(--color-primary-light)' }} aria-hidden="true" />
-              <h2 style={{ fontSize: '1.1rem', margin: 0 }}>Today's Check-In Logged</h2>
+      <section className="dashboard-hero-section" aria-labelledby="dashboard-hero-title">
+        <div className="dashboard-hero-grid">
+          {/* Left Column: Typography, Date & Intentional Actions */}
+          <div className="dashboard-hero-copy">
+            <div className="hero-pill-badge gsap-hero-badge">
+              <Sparkles size={14} className="hero-pill-icon" aria-hidden="true" />
+              <span>{todayFormatted} • Student Mental Equilibrium</span>
             </div>
-            <span className="badge badge-live">Recorded in Current Session</span>
-          </div>
 
-          <div className="today-summary-pills">
-            <div className="today-pill">
-              <span style={{ fontSize: '1.25rem' }}>{todayMoodObj?.emoji || '✨'}</span>
-              <span><strong>Mood:</strong> {todayMoodObj?.label || todayCheckIn.mood}</span>
-            </div>
-            <div className="today-pill">
-              <Activity size={16} style={{ color: 'var(--color-stress)' }} aria-hidden="true" />
-              <span><strong>Stress:</strong> {todayCheckIn.stress} / 5</span>
-            </div>
-            <div className="today-pill">
-              <BatteryMedium size={16} style={{ color: 'var(--color-primary-light)' }} aria-hidden="true" />
-              <span><strong>Energy:</strong> {todayCheckIn.energy} / 5</span>
-            </div>
-          </div>
-
-          {todayCheckIn.note ? (
-            <div className="checkin-note">
-              "{todayCheckIn.note}"
-            </div>
-          ) : (
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>
-              No personal note attached for today. (Notes are always optional).
-            </p>
-          )}
-        </section>
-      )}
-
-      {/* 
-        ========================================================================
-        METRICS ROW: 7-Day Averages (Stress, Energy, Total Logs)
-        ========================================================================
-      */}
-      <section className="metrics-row" aria-label="Recent weekly averages">
-        <div className="metric-card">
-          <div className="metric-header">
-            <span>Average Stress (7 Days)</span>
-            <Activity size={18} style={{ color: 'var(--color-stress)' }} aria-hidden="true" />
-          </div>
-          <div className="metric-value">
-            {avgStress !== 'N/A' ? (
+            {!todayCheckIn ? (
               <>
-                {avgStress} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/ 5</span>
+                <h1 id="dashboard-hero-title" className="hero-headline gsap-hero-title">
+                  Restoring quiet balance <br />
+                  <span className="hero-headline-accent">to hostel life.</span>
+                </h1>
+                <p className="hero-lead gsap-hero-desc">
+                  A private, calm sanctuary to observe your academic stress, daily energy, and emotional state. In-memory and autonomous, designed for hostel students without surveillance.
+                </p>
+                <div className="hero-cta-group gsap-hero-actions">
+                  <button 
+                    type="button" 
+                    className="btn-cinematic-primary"
+                    onClick={() => setActiveTab('checkin')}
+                  >
+                    <PenLine size={16} aria-hidden="true" />
+                    <span>Record Today's Log</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn-cinematic-secondary"
+                    onClick={() => setActiveTab('chat')}
+                  >
+                    <MessageSquare size={16} aria-hidden="true" />
+                    <span>Talk with AI Companion</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn-cinematic-ghost"
+                    onClick={() => setActiveTab('history')}
+                  >
+                    <span>View Trends</span>
+                    <ArrowRight size={14} aria-hidden="true" />
+                  </button>
+                </div>
               </>
             ) : (
-              '—'
-            )}
-          </div>
-          <div className="metric-subtext">
-            {/* 
-              Empty-data handling:
-              If no check-in records exist yet, we show a neutral message rather than
-              converting 'N/A' to NaN and falsely displaying "Within manageable range".
-            */}
-            {avgStress === 'N/A'
-              ? 'No check-in entries yet'
-              : Number(avgStress) > 3.5
-                ? 'Trending elevated — consider pacing study tasks'
-                : 'Within manageable range'}
-          </div>
-        </div>
-
-        <div className="metric-card">
-          <div className="metric-header">
-            <span>Average Energy (7 Days)</span>
-            <BatteryMedium size={18} style={{ color: 'var(--color-primary-light)' }} aria-hidden="true" />
-          </div>
-          <div className="metric-value">
-            {avgEnergy !== 'N/A' ? (
               <>
-                {avgEnergy} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/ 5</span>
+                <h1 id="dashboard-hero-title" className="hero-headline gsap-hero-title">
+                  Today's equilibrium <br />
+                  <span className="hero-headline-accent">is recorded.</span>
+                </h1>
+                <p className="hero-lead gsap-hero-desc">
+                  Thank you for pausing for self-reflection. Your session metrics are active. Explore empathetic dialogue with the Gemma AI companion or review your 7-day wellness trends.
+                </p>
+                <div className="hero-cta-group gsap-hero-actions">
+                  <button 
+                    type="button" 
+                    className="btn-cinematic-primary"
+                    onClick={() => setActiveTab('chat')}
+                  >
+                    <MessageSquare size={16} aria-hidden="true" />
+                    <span>Reflect with AI Companion</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn-cinematic-secondary"
+                    onClick={() => setActiveTab('checkin')}
+                  >
+                    <PenLine size={15} aria-hidden="true" />
+                    <span>Update Today's Log</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn-cinematic-ghost"
+                    onClick={() => setActiveTab('history')}
+                  >
+                    <span>See Trends</span>
+                    <ArrowRight size={14} aria-hidden="true" />
+                  </button>
+                </div>
               </>
-            ) : (
-              '—'
             )}
           </div>
-          <div className="metric-subtext">
-            {/* Neutral empty state for energy when no check-in records exist */}
-            {avgEnergy === 'N/A'
-              ? 'No check-in entries yet'
-              : Number(avgEnergy) < 2.5
-                ? 'Lower physical stamina noted recently'
-                : 'Sustained daily energy levels'}
-          </div>
-        </div>
 
-        <div className="metric-card">
-          <div className="metric-header">
-            <span>Check-In Entries</span>
-            <Calendar size={18} style={{ color: 'var(--color-accent-lavender)' }} aria-hidden="true" />
-          </div>
-          <div className="metric-value">
-            {checkIns.length}
-          </div>
-          <div className="metric-subtext">
-            {checkIns.length === 0
-              ? 'No check-in entries yet'
-              : `${checkIns.filter((c) => c.isSynthetic).length} synthetic demo entries included`}
+          {/* Right Column: 3D Centerpiece Orb */}
+          <div className="dashboard-hero-visual gsap-hero-orb">
+            <div className="hero-visual-backdrop" aria-hidden="true" />
+            <WellnessOrb3D className="hero-3d-orb" />
           </div>
         </div>
       </section>
 
       {/* 
         ========================================================================
-        SPLIT SECTION: Thought of the Day & Quick Support Hotline
+        BENTO SECTION: Comprehensive Wellness Overview & Trends
         ========================================================================
       */}
-      <div className="dashboard-split">
-        {/* Curated Pre-Written Reflection Card */}
-        <section className="card" aria-label="Supportive reflection prompt">
-          <div className="card-header">
-            <div className="card-title">
-              <HelpCircle size={20} style={{ color: 'var(--color-accent-lavender)' }} aria-hidden="true" />
-              <span>Thought of the Day</span>
+      <section className="bento-grid-section" aria-label="Wellness overview and metrics">
+        {/* Bento 1: Today's Status Card (2-columns) */}
+        <div className={`bento-card bento-card-span-2 gsap-bento-card ${todayCheckIn ? 'bento-card-logged' : 'bento-card-pending'}`}>
+          <div className="bento-card-header">
+            <div className="bento-card-title-group">
+              {todayCheckIn ? (
+                <CheckCircle2 size={18} className="bento-title-icon-emerald" aria-hidden="true" />
+              ) : (
+                <Clock size={18} className="bento-title-icon-muted" aria-hidden="true" />
+              )}
+              <h2 className="bento-card-title">Today's Check-In Status</h2>
             </div>
-            <button
-              type="button"
-              className="btn btn-ghost"
-              onClick={handleNextPrompt}
-              aria-label="Load next reflection prompt"
-              style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }}
-            >
-              <RefreshCw size={14} aria-hidden="true" />
-              <span>Next</span>
-            </button>
-          </div>
-
-          <div style={{ marginBottom: '0.65rem' }}>
-            <span className="badge badge-calm" style={{ fontSize: '0.75rem' }}>
-              {currentPrompt.category}
+            <span className={`bento-badge ${todayCheckIn ? 'badge-emerald' : 'badge-amber'}`}>
+              {todayCheckIn ? 'Session Active' : 'Pending Today'}
             </span>
           </div>
 
-          <blockquote style={{ fontSize: '1.05rem', color: 'var(--text-primary)', lineHeight: 1.6, margin: '0 0 1rem 0', fontWeight: 500 }}>
-            "{currentPrompt.prompt}"
-          </blockquote>
+          {todayCheckIn ? (
+            <div className="bento-status-body">
+              <div className="bento-status-metrics">
+                <div className="bento-status-pill">
+                  <span className="status-pill-label">Mood</span>
+                  <span className="status-pill-value">{todayMoodObj?.label || todayCheckIn.mood}</span>
+                </div>
+                <div className="bento-status-pill">
+                  <span className="status-pill-label">Stress Level</span>
+                  <span className="status-pill-value status-pill-value-stress">{todayCheckIn.stress} / 5</span>
+                </div>
+                <div className="bento-status-pill">
+                  <span className="status-pill-label">Energy Level</span>
+                  <span className="status-pill-value status-pill-value-energy">{todayCheckIn.energy} / 5</span>
+                </div>
+              </div>
+              {todayCheckIn.note && (
+                <p className="bento-status-note">
+                  "{todayCheckIn.note}"
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="bento-status-empty">
+              <p className="bento-status-empty-text">
+                You haven't logged your mood, stress, or stamina for today yet. It takes under 60 seconds to build self-awareness.
+              </p>
+              <button
+                type="button"
+                className="btn-cinematic-secondary btn-sm"
+                onClick={() => setActiveTab('checkin')}
+              >
+                <PenLine size={14} aria-hidden="true" />
+                <span>Begin Quick Log</span>
+              </button>
+            </div>
+          )}
+        </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.75rem', borderTop: '1px solid var(--border-subtle)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            <span>Pre-written self-reflection prompt</span>
-            <button 
-              type="button" 
-              onClick={() => setActiveTab('reflections')}
-              style={{ color: 'var(--color-primary-light)', fontSize: '0.8rem', fontWeight: 600 }}
+        {/* Bento 2: 7-Day Trend Visualizer Card (2-columns) ⭐ Useful Trend Visualization */}
+        <div className="bento-card bento-card-span-2 gsap-bento-card bento-trend-visualizer-card">
+          <div className="bento-card-header">
+            <div className="bento-card-title-group">
+              <BarChart3 size={18} className="bento-title-icon-emerald" aria-hidden="true" />
+              <h2 className="bento-card-title">7-Day Wellness Rhythm</h2>
+            </div>
+            <div className="bento-mini-trend-legend">
+              <span className="legend-chip-energy"><span className="legend-dot dot-energy" /> Energy</span>
+              <span className="legend-chip-stress"><span className="legend-dot dot-stress" /> Stress</span>
+            </div>
+          </div>
+
+          {/* Dual-bar mini chart for recent 7 days */}
+          <div className="bento-trend-chart-body" aria-label="7-Day stress and energy comparison bars">
+            <div className="bento-bars-grid">
+              {recentCheckIns.map((item, idx) => {
+                const dayName = getShortDayName(item.date);
+                const stressHeight = (Number(item.stress) / 5) * 100;
+                const energyHeight = (Number(item.energy) / 5) * 100;
+
+                return (
+                  <div key={item.id || idx} className="bento-bar-col">
+                    <div 
+                      className="bento-dual-bars-track" 
+                      title={`${dayName}: Stress ${item.stress}/5, Energy ${item.energy}/5`}
+                    >
+                      <div 
+                        className="bento-mini-bar bento-mini-bar-energy" 
+                        style={{ height: `${energyHeight}%` }} 
+                      />
+                      <div 
+                        className="bento-mini-bar bento-mini-bar-stress" 
+                        style={{ height: `${stressHeight}%` }} 
+                      />
+                    </div>
+                    <span className="bento-bar-day">{dayName}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="bento-card-footer">
+            <span className="bento-footer-note">Daily fluctuation comparison</span>
+            <button
+              type="button"
+              className="bento-footer-link"
+              onClick={() => setActiveTab('history')}
             >
-              View all prompts →
+              <span>Explore full trends</span>
+              <ArrowRight size={13} aria-hidden="true" />
             </button>
           </div>
-        </section>
+        </div>
 
-        {/* Quick Indian Support Access Card */}
-        <section className="card card-elevated" aria-label="Verified emergency and support contact">
-          <div className="card-header">
-            <div className="card-title">
-              <PhoneCall size={20} style={{ color: 'var(--color-primary-light)' }} aria-hidden="true" />
-              <span>Need Someone to Talk To?</span>
-            </div>
+        {/* Bento 3: 7-Day Mood Summary ⭐ Mood Summary */}
+        <div className="bento-card gsap-bento-card">
+          <div className="bento-card-header">
+            <span className="bento-stat-label">7-Day Dominant Mood</span>
+            <DominantMoodIcon size={17} className="bento-icon-emerald" aria-hidden="true" />
           </div>
-
-          <p style={{ fontSize: '0.875rem', marginBottom: '1rem', color: 'var(--text-secondary)' }}>
-            If exam pressure, loneliness, or hostel challenges feel overwhelming, free confidential support is available 24/7 across India.
+          <div className="bento-stat-number bento-stat-emerald">
+            {dominantMoodObj?.label || 'Good'}
+          </div>
+          <p className="bento-stat-desc">
+            Recorded {maxCount} of last {recentCheckIns.length} days ({dominantMoodObj?.description || 'Calm and steady'}).
           </p>
+        </div>
 
-          <div style={{ background: 'var(--bg-surface)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', marginBottom: '1rem' }}>
-            <div style={{ fontSize: '0.75rem', color: 'var(--color-primary-light)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              Govt. of India Tele-MANAS
-            </div>
-            <div style={{ fontSize: '1.35rem', fontFamily: 'var(--font-heading)', fontWeight: 700, margin: '0.25rem 0', color: 'var(--text-primary)' }}>
-              14416 / 1800 891 4416
-            </div>
-            <div style={{ fontSize: '0.775rem', color: 'var(--text-muted)' }}>
-              24/7 • Free • Available in 20+ Indian languages
-            </div>
+        {/* Bento 4: 7-Day Stress Average */}
+        <div className="bento-card gsap-bento-card">
+          <div className="bento-card-header">
+            <span className="bento-stat-label">7-Day Avg Stress</span>
+            <Activity size={17} className="bento-icon-coral" aria-hidden="true" />
           </div>
+          <div className="bento-stat-number bento-stat-stress">
+            {avgStress !== 'N/A' ? avgStress : '—'}
+            <span className="bento-stat-denom">/ 5</span>
+          </div>
+          <p className="bento-stat-desc">
+            {avgStress === 'N/A'
+              ? 'No check-in entries yet'
+              : Number(avgStress) > 3.5
+                ? 'Elevated pressure — pace your study intervals'
+                : 'Balanced academic workload'}
+          </p>
+        </div>
 
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => setActiveTab('support')}
-            style={{ width: '100%' }}
-          >
-            <span>View All Verified Helplines & Campus Advice</span>
-            <ArrowRight size={16} aria-hidden="true" />
-          </button>
-        </section>
-      </div>
+        {/* Bento 5: 7-Day Energy Average */}
+        <div className="bento-card gsap-bento-card">
+          <div className="bento-card-header">
+            <span className="bento-stat-label">7-Day Avg Energy</span>
+            <BatteryMedium size={17} className="bento-icon-emerald" aria-hidden="true" />
+          </div>
+          <div className="bento-stat-number bento-stat-energy">
+            {avgEnergy !== 'N/A' ? avgEnergy : '—'}
+            <span className="bento-stat-denom">/ 5</span>
+          </div>
+          <p className="bento-stat-desc">
+            {avgEnergy === 'N/A'
+              ? 'No check-in entries yet'
+              : Number(avgEnergy) < 2.5
+                ? 'Low physical stamina — prioritize sleep'
+                : 'Steady daily stamina levels'}
+          </p>
+        </div>
 
-      {/* Security & Prototype Architecture Notice */}
-      <section className="card" style={{ background: 'rgba(21, 29, 47, 0.4)' }} aria-label="Prototype architecture notice">
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.85rem' }}>
-          <ShieldCheck size={24} style={{ color: 'var(--color-primary-light)', flexShrink: 0, marginTop: '0.2rem' }} aria-hidden="true" />
-          <div>
-            <h3 style={{ fontSize: '0.95rem', marginBottom: '0.35rem' }}>About this Stage 2 Prototype</h3>
-            <p style={{ fontSize: '0.85rem', margin: 0, lineHeight: 1.5 }}>
-              This demo runs completely locally inside your browser's React state. No data is transmitted to an external server or saved across browser tabs. In Stage 3, we will add Supabase with Row Level Security (RLS) so that only you can securely read or write your personal check-ins.
-            </p>
+        {/* Bento 6: Total Logged Entries */}
+        <div className="bento-card gsap-bento-card">
+          <div className="bento-card-header">
+            <span className="bento-stat-label">Check-In Habit</span>
+            <Calendar size={17} className="bento-icon-teal" aria-hidden="true" />
+          </div>
+          <div className="bento-stat-number">
+            {checkIns.length}
+          </div>
+          <p className="bento-stat-desc">
+            {checkIns.filter((c) => c.isSynthetic).length} synthetic demo records included for trend baseline.
+          </p>
+        </div>
+
+        {/* Bento 7: Quick Access to AI Companion (2-columns) ⭐ AI Companion Quick Access */}
+        <div className="bento-card bento-card-span-2 gsap-bento-card bento-ai-quick-card">
+          <div className="bento-card-header">
+            <div className="bento-card-title-group">
+              <MessageSquare size={18} className="bento-title-icon-emerald" aria-hidden="true" />
+              <h2 className="bento-card-title">AI Reflection Companion</h2>
+            </div>
+            <span className="bento-badge badge-emerald">Gemma MoE • Port 5002</span>
+          </div>
+          <p className="bento-card-desc">
+            Feeling overwhelmed by exams, mess routines, or hostel friction? Talk it through with our private empathetic listener in browser RAM.
+          </p>
+          <div className="bento-ai-prompt-shortcuts">
+            <button
+              type="button"
+              className="ai-shortcut-pill"
+              onClick={() => setActiveTab('chat')}
+            >
+              "How to quiet racing thoughts before sleep?"
+            </button>
+            <button
+              type="button"
+              className="ai-shortcut-pill"
+              onClick={() => setActiveTab('chat')}
+            >
+              "Managing study pressure tonight"
+            </button>
+          </div>
+          <div className="bento-card-footer">
+            <span className="bento-footer-note">Microphone voice input & audio reply ready</span>
+            <button
+              type="button"
+              className="bento-footer-link"
+              onClick={() => setActiveTab('chat')}
+            >
+              <span>Talk with Companion</span>
+              <ArrowRight size={13} aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+
+        {/* Bento 8: Thought of the Day (2-columns) */}
+        <div className="bento-card bento-card-span-2 gsap-bento-card">
+          <div className="bento-card-header">
+            <div className="bento-card-title-group">
+              <HelpCircle size={18} className="bento-title-icon-lavender" aria-hidden="true" />
+              <h2 className="bento-card-title">Thought of the Day</h2>
+            </div>
+            <button
+              type="button"
+              className="btn-cinematic-icon"
+              onClick={handleNextPrompt}
+              aria-label="Load next reflection prompt"
+              title="Next reflection thought"
+            >
+              <RefreshCw size={13} aria-hidden="true" />
+            </button>
+          </div>
+          <div className="bento-category-tag">
+            {currentPrompt.category}
+          </div>
+          <blockquote className="bento-quote-text">
+            "{currentPrompt.prompt}"
+          </blockquote>
+          <div className="bento-card-footer">
+            <span className="bento-footer-note">Curated mindful reflection</span>
+            <button
+              type="button"
+              className="bento-footer-link"
+              onClick={() => setActiveTab('reflections')}
+            >
+              <span>Explore all prompts</span>
+              <ArrowRight size={13} aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+
+        {/* Bento 9: Quick Indian Crisis Support Link (2-columns) */}
+        <div className="bento-card bento-card-span-2 gsap-bento-card bento-card-emergency">
+          <div className="bento-card-header">
+            <div className="bento-card-title-group">
+              <PhoneCall size={18} className="bento-title-icon-emerald" aria-hidden="true" />
+              <h2 className="bento-card-title">Confidential Support Resources</h2>
+            </div>
+            <span className="bento-badge badge-neutral">24/7 Toll-Free</span>
+          </div>
+          <p className="bento-card-desc">
+            If hostel pressure, loneliness, or academic anxiety feels overwhelming, verified support is available anytime across India.
+          </p>
+          <div className="bento-emergency-contact">
+            <div className="emergency-name">Govt. Tele-MANAS Helpline</div>
+            <a href="tel:14416" className="emergency-phone-link">
+              14416 / 1800 891 4416
+            </a>
+          </div>
+          <div className="bento-card-footer">
+            <button
+              type="button"
+              className="btn-cinematic-ghost btn-sm"
+              onClick={() => setActiveTab('support')}
+            >
+              <span>View all emergency numbers & campus care</span>
+              <ArrowRight size={13} aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+
+        {/* Bento 10: In-Memory Architecture Notice (Full Width 4-columns) */}
+        <div className="bento-card bento-card-span-4 gsap-bento-card bento-architecture-note">
+          <div className="architecture-note-inner">
+            <ShieldCheck size={20} className="text-emerald-400 flex-shrink-0" aria-hidden="true" />
+            <div className="architecture-note-text">
+              <h3 className="architecture-note-title">Private & In-Memory Session Boundary</h3>
+              <p className="architecture-note-desc">
+                Your check-in reflections exist only in browser memory for this session and are never saved to an external database. The companion connects locally to the Gemma MoE backend on port 5002 for empathetic listening.
+              </p>
+            </div>
           </div>
         </div>
       </section>

@@ -800,7 +800,7 @@ export default function WellnessChat({ setActiveTab }) {
       </div>
 
       {/* Messages Scroll Area */}
-      <div className="chat-messages-container" role="log" aria-live="polite">
+      <div className="chat-messages-container" data-lenis-prevent role="log" aria-live="polite">
         {messages.map((msg) => {
           const isUser = msg.role === 'user';
           const isSafety = Boolean(msg.safetyAlert);
@@ -831,10 +831,10 @@ export default function WellnessChat({ setActiveTab }) {
                 {/* Emergency Hotline Resource Cards on Safety Trigger */}
                 {isSafety && (
                   <div className="chat-safety-resources">
-                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#fecdd3', marginBottom: '0.4rem' }}>
+                    <div className="chat-safety-resources-title">
                       Verified Free 24/7 Helplines (India):
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <div className="chat-safety-links-stack">
                       <a href="tel:14416" className="chat-resource-link">
                         <PhoneCall size={14} aria-hidden="true" />
                         <span><strong>Tele-MANAS:</strong> Call 14416 (Govt 24/7 Toll-Free)</span>
@@ -843,7 +843,7 @@ export default function WellnessChat({ setActiveTab }) {
                         <PhoneCall size={14} aria-hidden="true" />
                         <span><strong>KIRAN:</strong> Call 1800-599-0019 (Mental Health)</span>
                       </a>
-                      <a href="tel:112" className="chat-resource-link" style={{ borderColor: 'var(--color-stress)' }}>
+                      <a href="tel:112" className="chat-resource-link chat-resource-link-emergency">
                         <PhoneCall size={14} aria-hidden="true" />
                         <span><strong>Emergency:</strong> Call 112 (National Police/Ambulance)</span>
                       </a>
@@ -852,8 +852,7 @@ export default function WellnessChat({ setActiveTab }) {
                       <button
                         type="button"
                         onClick={() => setActiveTab('support')}
-                        className="btn btn-ghost"
-                        style={{ marginTop: '0.5rem', fontSize: '0.75rem', padding: '0.25rem 0.5rem', color: '#fda4af' }}
+                        className="btn btn-ghost chat-safety-directory-btn"
                       >
                         View Full Support Directory →
                       </button>
@@ -921,25 +920,24 @@ export default function WellnessChat({ setActiveTab }) {
         {/* Visible In-Flow Error Notification */}
         {errorMessage && (
           <div className="chat-message-row chat-row-assistant" role="alert">
-            <div className="chat-avatar" style={{ background: 'var(--color-stress-bg)', color: 'var(--color-stress)', border: '1px solid var(--color-stress)' }} aria-hidden="true">
+            <div className="chat-avatar chat-avatar-error" aria-hidden="true">
               <AlertTriangle size={16} />
             </div>
-            <div className="chat-bubble chat-bubble-assistant" style={{ borderColor: 'var(--color-stress)', background: 'rgba(244, 63, 94, 0.08)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: '#fda4af', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.35rem' }}>
+            <div className="chat-bubble chat-bubble-assistant chat-bubble-error">
+              <div className="chat-error-title">
                 <AlertTriangle size={15} />
                 <span>Response Interrupted</span>
               </div>
-              <div className="chat-bubble-text" style={{ color: 'var(--text-primary)', fontSize: '0.875rem' }}>
+              <div className="chat-bubble-text">
                 {errorMessage}
               </div>
               {lastUserMessage && (
                 <div style={{ marginTop: '0.75rem' }}>
                   <button
                     type="button"
-                    className="btn btn-secondary"
+                    className="btn btn-secondary btn-sm"
                     onClick={() => handleSendMessage(lastUserMessage)}
                     disabled={isLoading}
-                    style={{ fontSize: '0.8rem', padding: '0.3rem 0.75rem' }}
                   >
                     <RotateCcw size={13} style={{ marginRight: '0.35rem' }} />
                     Retry Message
@@ -966,10 +964,9 @@ export default function WellnessChat({ setActiveTab }) {
           {lastUserMessage && (
             <button
               type="button"
-              className="btn btn-secondary"
+              className="btn btn-secondary btn-sm"
               onClick={() => handleSendMessage(lastUserMessage)}
               disabled={isLoading}
-              style={{ fontSize: '0.8rem', padding: '0.3rem 0.75rem' }}
             >
               Retry
             </button>
@@ -980,7 +977,7 @@ export default function WellnessChat({ setActiveTab }) {
       {/* Suggested Starter Pills (Displayed only when conversation is fresh) */}
       {messages.length === 1 && !isLoading && (
         <div className="chat-starters-section">
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+          <span className="chat-starters-heading">
             Common Hostel Reflections:
           </span>
           <div className="chat-starters-pills">
@@ -1018,9 +1015,8 @@ export default function WellnessChat({ setActiveTab }) {
               </div>
               <button
                 type="button"
-                className="btn btn-ghost"
+                className="btn btn-ghost voice-stop-btn"
                 onClick={stopListening}
-                style={{ fontSize: '0.75rem', padding: '0.2rem 0.55rem', color: '#fda4af' }}
                 aria-label="Stop microphone listening"
               >
                 <Square size={12} style={{ marginRight: '0.25rem' }} aria-hidden="true" />

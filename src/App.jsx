@@ -1,21 +1,6 @@
-/**
- * App.jsx - Main Application Shell & State Container
- * 
- * HOW THIS FILE WORKS:
- * In React, state is typically kept at the highest common parent of the components
- * that need it. This pattern is known as "Lifting State Up".
- * 
- * Here, App.jsx manages:
- * 1. `activeTab` - which screen the student is currently viewing ('dashboard', 'checkin', etc.)
- * 2. `checkIns` - the in-memory array of all past and newly submitted check-ins
- * 3. `handleSaveCheckIn` - the function that receives a new check-in from DailyCheckIn.jsx
- *    and adds or updates it in the array.
- * 
- * When `checkIns` updates, React automatically re-renders App.jsx and recalculates
- * `todayCheckIn`, instantly updating both the Dashboard and the History view!
- */
-
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import Lenis from 'lenis';
+import 'lenis/dist/lenis.css';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import Dashboard from './components/dashboard/Dashboard';
@@ -28,21 +13,99 @@ import WellnessChat from './components/chat/WellnessChat';
 import { INITIAL_SYNTHETIC_CHECKINS } from './data/mockData';
 import { getTodayDateString } from './utils/dateUtils';
 
+function getInitialTheme() {
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem('hostelwell-theme');
+      if (saved === 'light' || saved === 'dark') return saved;
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+      }
+    } catch {
+      // Ignore read errors
+    }
+  }
+  return 'dark';
+}
+
 export default function App() {
   // Navigation state: determines which page/tab is currently visible
   const [activeTab, setActiveTab] = useState('dashboard');
+
+  // Theme state: defaults to dark for cinematic aesthetic
+  const [theme, setTheme] = useState(getInitialTheme);
+
+  // Sync theme attribute on <html> and persist to localStorage
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    try {
+      localStorage.setItem('hostelwell-theme', theme);
+    } catch {
+      // Ignore storage errors
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
+  // Lenis smooth scrolling integration with active resize handling
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return;
+    }
+
+    let lenisInstance;
+    let rafId;
+
+    try {
+      lenisInstance = new Lenis({
+        duration: 0.95,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        orientation: 'vertical',
+        gestureOrientation: 'vertical',
+        smoothWheel: true,
+        wheelMultiplier: 1.0,
+        syncTouch: false, // NEVER hijack mobile/trackpad touch gestures
+      });
+
+      const raf = (time) => {
+        lenisInstance.raf(time);
+        rafId = requestAnimationFrame(raf);
+      };
+      rafId = requestAnimationFrame(raf);
+
+      // Re-calculate page scroll height as cards, 3D orb, and content expand
+      const handleResize = () => {
+        if (lenisInstance) lenisInstance.resize();
+      };
+
+      const resizeObserver = new ResizeObserver(() => {
+        handleResize();
+      });
+      resizeObserver.observe(document.body);
+
+      const timer = setTimeout(handleResize, 150);
+      const timer2 = setTimeout(handleResize, 600);
+
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(timer2);
+        resizeObserver.disconnect();
+        if (rafId) cancelAnimationFrame(rafId);
+        if (lenisInstance) lenisInstance.destroy();
+      };
+    } catch (e) {
+      console.warn('Lenis smooth scrolling bypassed:', e);
+    }
+  }, [activeTab]);
 
   // Application data state: initialized with our 6 synthetic past demo check-ins
   const [checkIns, setCheckIns] = useState(INITIAL_SYNTHETIC_CHECKINS);
 
   /**
    * Derived State: Find if there is an existing check-in matching today's local date.
-   * By calling `getTodayDateString()` dynamically whenever `checkIns` updates,
-   * we ensure that if a student keeps the application open past midnight,
-   * the check-in status evaluates against the true current calendar date rather
-   * than a stale date frozen when the page was first loaded.
-   * 
-   * Returns: the check-in object if found for today, or undefined if not yet recorded.
    */
   const todayCheckIn = useMemo(() => {
     const currentLocalDate = getTodayDateString();
@@ -51,24 +114,16 @@ export default function App() {
 
   /**
    * Save Handler Callback:
-   * Passed down to DailyCheckIn.jsx as the `onSaveCheckIn` prop.
-   * When the student submits the form:
-   * 1. If a check-in for today already exists, we replace it (updating their log).
-   * 2. If it's a new check-in, we append it to the existing array.
-   * 
-   * @param {Object} newRecord - The check-in object containing mood, stress, energy, note, etc.
    */
   const handleSaveCheckIn = (newRecord) => {
     setCheckIns((previousList) => {
       const existingIndex = previousList.findIndex((item) => item.date === newRecord.date);
 
       if (existingIndex >= 0) {
-        // Today was already recorded: create a copy of the array and update the record
         const updatedList = [...previousList];
         updatedList[existingIndex] = newRecord;
         return updatedList;
       } else {
-        // First check-in today: add the new record to the list
         return [...previousList, newRecord];
       }
     });
@@ -76,18 +131,23 @@ export default function App() {
 
   return (
     <div className="app-container">
-      {/* 
-        Navbar receives:
-        - activeTab & setActiveTab to display active links and switch screens
-        - hasCheckedInToday to show a "Pending" badge on the Daily Check-In tab if needed
-      */}
+      {/* Immersive cinematic background layers */}
+      <div className="app-ambient-background" aria-hidden="true">
+        <div className="ambient-glow-top" />
+        <div className="ambient-glow-bottom" />
+        <div className="ambient-grid-overlay" />
+      </div>
+
+      {/* Floating Oval Glass Navbar */}
       <Navbar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab}
         hasCheckedInToday={Boolean(todayCheckIn)} 
+        theme={theme}
+        toggleTheme={toggleTheme}
       />
 
-      {/* Main Content Area: Conditionally renders the active view based on activeTab */}
+      {/* Main Content Area */}
       <main className="main-content" id="main-content">
         {activeTab === 'dashboard' && (
           <Dashboard 
@@ -112,7 +172,7 @@ export default function App() {
         {activeTab === 'history' && (
           <HistoryView 
             checkIns={checkIns} 
-            setActiveTab={setActiveTab}
+            setActiveTab={setActiveTab} 
           />
         )}
 
@@ -129,8 +189,8 @@ export default function App() {
         )}
       </main>
 
-      {/* Accessible Footer with emergency contacts and quick navigation */}
-      <Footer setActiveTab={setActiveTab} />
+      {/* Refined Dark Glass Footer */}
+      <Footer setActiveTab={setActiveTab} theme={theme} toggleTheme={toggleTheme} />
     </div>
   );
 }
