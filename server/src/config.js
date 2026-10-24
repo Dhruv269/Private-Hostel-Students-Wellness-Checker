@@ -17,7 +17,7 @@ const __dirname = path.dirname(__filename);
 // Explicitly load .env from the server root directory
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-const PORT = parseInt(process.env.PORT, 10) || 5001;
+const PORT = parseInt(process.env.PORT, 10) || 5002;
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 

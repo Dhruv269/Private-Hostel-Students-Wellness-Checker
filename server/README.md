@@ -33,7 +33,7 @@ cp .env.example .env
 
 Open `server/.env` in your text editor and supply your Google AI Studio API key:
 ```ini
-PORT=5001
+PORT=5002
 CLIENT_URL=http://localhost:5173
 GEMINI_API_KEY=your_actual_google_ai_studio_key_here
 GEMMA_MODEL_ID=gemma-4-26b-a4b-it
@@ -55,7 +55,7 @@ You should see:
 ```text
 ======================================================
 🌱 HostelWell Backend Server running
-📡 URL: http://localhost:5001
+📡 URL: http://localhost:5002
 🔒 Allowed Client Origin: http://localhost:5173
 🤖 Configured Model: gemma-4-26b-a4b-it
 🔑 Key Configured: Yes (Active)
@@ -71,7 +71,7 @@ Checks if the backend is running and whether an API key has been provided.
 
 **Test with curl:**
 ```bash
-curl -s http://localhost:5001/api/health
+curl -s http://localhost:5002/api/health
 ```
 
 **Sample Response:**
@@ -92,7 +92,7 @@ Sends student reflection notes for empathetic, non-clinical processing by Gemma.
 
 **Test with curl:**
 ```bash
-curl -X POST http://localhost:5001/api/chat \
+curl -X POST http://localhost:5002/api/chat \
   -H "Content-Type: application/json" \
   -d '{
     "messages": [

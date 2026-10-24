@@ -69,7 +69,7 @@ HostelWell is a web application designed specifically for college students livin
                        ▼
 ┌──────────────────────────────────────────────┐
 │         Backend Server (Node.js)             │
-│       Express (http://localhost:5001)        │
+│       Express (http://localhost:5002)        │
 │                                              │
 │  ├─ Strict CORS (Whitelists CLIENT_URL)     │
 │  ├─ Rate Limiter (30 req / 15 min / IP)      │
@@ -144,8 +144,8 @@ The backend requires a `server/.env` file to configure ports, client origins, an
 
 2. **Open `server/.env` and supply your actual API key:**
    ```ini
-   # Server Port (Default is 5001 to prevent macOS AirPlay port 5000 collision)
-   PORT=5001
+   # Server Port (Default is 5002 to prevent macOS AirPlay port 5000 collision)
+   PORT=5002
 
    # Allowed Frontend Origin for CORS
    CLIENT_URL=http://localhost:5173
@@ -161,7 +161,7 @@ The backend requires a `server/.env` file to configure ports, client origins, an
 
 | Variable | Default Value | Description |
 | :--- | :--- | :--- |
-| `PORT` | `5001` | The local port the Express server listens on. *Note: Port 5000 is reserved on macOS by AirPlay Receiver.* |
+| `PORT` | `5002` | The local port the Express server listens on. *Note: Port 5000 is reserved on macOS by AirPlay Receiver.* |
 | `CLIENT_URL` | `http://localhost:5173` | The frontend origin authorized by CORS. |
 | `GEMINI_API_KEY` | *(None)* | Your private Google AI Studio API key used by `@google/genai` to query Gemma. |
 | `GEMMA_MODEL_ID` | `gemma-4-26b-a4b-it` | The exact Gemma model used for inference. Must be a Gemma family model. |
@@ -188,7 +188,7 @@ From the repository root:
 cd server
 npm run dev
 ```
-- Local URL: **`http://localhost:5001`**
+- Local URL: **`http://localhost:5002`**
 - Runs `node --watch src/index.js` for automatic server reloads on code edits.
 - Alternatively, run `npm start` for standard production execution.
 
@@ -213,7 +213,7 @@ This project strictly utilizes **Google's Gemma open model family**. Non-Gemma m
 
 ## 📡 Backend API Reference
 
-Base URL: `http://localhost:5001`
+Base URL: `http://localhost:5002`
 
 ### 1. Health Check: `GET /api/health`
 
@@ -237,7 +237,7 @@ Performs a lightweight liveness check and verifies whether a valid API key is co
 
 #### Test with curl:
 ```bash
-curl -s http://localhost:5001/api/health
+curl -s http://localhost:5002/api/health
 ```
 
 ---
@@ -318,13 +318,13 @@ If the message contains acute crisis indicators (e.g. self-harm or suicidal inte
 | `400 Bad Request` | `{"error": "Invalid request: Message at index N has unsupported role \"admin\"..."}` | An unsupported role was provided. |
 | `400 Bad Request` | `{"error": "Invalid request: Message at index N exceeds maximum length of 1000 characters."}` | Message content exceeded the 1,000 character limit. |
 | `429 Too Many Requests` | `{"error": "Too many requests. Please pause for a few minutes before checking in again."}` | IP exceeded the 30 requests per 15-minute quota. |
-| `500 Internal Server Error` | `{"error": "CORS blocked: Origin \"...\" is not authorized."}` | Request sent from an unapproved web origin. |
+| `403 Forbidden` | `{"error": "CORS blocked: Origin \"...\" is not authorized."}` | Request sent from an unapproved web origin. |
 | `503 Service Unavailable` | `{"error": "GEMINI_API_KEY is not configured or contains placeholder text..."}` | Missing or placeholder API key in `server/.env`. |
 | `504 Gateway Timeout` | `{"error": "AI inference request timed out after 20 seconds. Please try again."}` | Google Gen AI upstream connection timed out. |
 
 #### Test with curl:
 ```bash
-curl -X POST http://localhost:5001/api/chat \
+curl -X POST http://localhost:5002/api/chat \
   -H "Content-Type: application/json" \
   -d '{"messages": [{"role": "user", "content": "Had a long day studying in my hostel room."}]}'
 ```
@@ -363,12 +363,12 @@ HostelWell is designed around strict ethical and safety principles:
 
 ## 🔧 Troubleshooting
 
-### 1. `Error: listen EADDRINUSE: address already in use :::5001`
-- **Cause:** Another process or previous server instance is already running on port 5001.
-- **Solution:** Find the process holding port 5001 and terminate it:
+### 1. `Error: listen EADDRINUSE: address already in use :::5002`
+- **Cause:** Another process or previous server instance is already running on port 5002.
+- **Solution:** Find the process holding port 5002 and terminate it:
   ```bash
   # Find PID:
-  lsof -i :5001
+  lsof -i :5002
   # Terminate process:
   kill -9 <PID>
   ```
@@ -419,7 +419,7 @@ npm run preview
 From the `server/` directory:
 
 ```bash
-# Start backend in watch mode (Express on http://localhost:5001)
+# Start backend in watch mode (Express on http://localhost:5002)
 npm run dev
 
 # Start backend in standard mode

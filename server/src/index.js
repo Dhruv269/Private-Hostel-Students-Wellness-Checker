@@ -27,7 +27,10 @@ const corsOptions = {
     if (!origin || origin === config.CLIENT_URL) {
       callback(null, true);
     } else {
-      callback(new Error(`CORS blocked: Origin "${origin}" is not authorized.`));
+      const corsError = new Error(`CORS blocked: Origin "${origin}" is not authorized.`);
+      corsError.status = 403;
+      corsError.isCors = true;
+      callback(corsError);
     }
   },
   methods: ['GET', 'POST', 'OPTIONS'],
@@ -61,7 +64,7 @@ app.use((req, res) => {
 
 // 7. Centralized Error Handler (Never returns stack traces or environment secrets)
 app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
-  const status = err.status || 500;
+  const status = err.status || err.statusCode || 500;
   res.status(status).json({
     error: err.message || 'An internal server error occurred.'
   });
