@@ -197,10 +197,25 @@ export default function Dashboard({
             <Activity size={18} style={{ color: 'var(--color-stress)' }} aria-hidden="true" />
           </div>
           <div className="metric-value">
-            {avgStress} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/ 5</span>
+            {avgStress !== 'N/A' ? (
+              <>
+                {avgStress} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/ 5</span>
+              </>
+            ) : (
+              '—'
+            )}
           </div>
           <div className="metric-subtext">
-            {Number(avgStress) > 3.5 ? 'Trending elevated — consider pacing study tasks' : 'Within manageable range'}
+            {/* 
+              Empty-data handling:
+              If no check-in records exist yet, we show a neutral message rather than
+              converting 'N/A' to NaN and falsely displaying "Within manageable range".
+            */}
+            {avgStress === 'N/A'
+              ? 'No check-in entries yet'
+              : Number(avgStress) > 3.5
+                ? 'Trending elevated — consider pacing study tasks'
+                : 'Within manageable range'}
           </div>
         </div>
 
@@ -210,10 +225,21 @@ export default function Dashboard({
             <BatteryMedium size={18} style={{ color: 'var(--color-primary-light)' }} aria-hidden="true" />
           </div>
           <div className="metric-value">
-            {avgEnergy} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/ 5</span>
+            {avgEnergy !== 'N/A' ? (
+              <>
+                {avgEnergy} <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/ 5</span>
+              </>
+            ) : (
+              '—'
+            )}
           </div>
           <div className="metric-subtext">
-            {Number(avgEnergy) < 2.5 ? 'Lower physical stamina noted recently' : 'Sustained daily energy levels'}
+            {/* Neutral empty state for energy when no check-in records exist */}
+            {avgEnergy === 'N/A'
+              ? 'No check-in entries yet'
+              : Number(avgEnergy) < 2.5
+                ? 'Lower physical stamina noted recently'
+                : 'Sustained daily energy levels'}
           </div>
         </div>
 
@@ -226,7 +252,9 @@ export default function Dashboard({
             {checkIns.length}
           </div>
           <div className="metric-subtext">
-            {checkIns.filter((c) => c.isSynthetic).length} synthetic demo entries included
+            {checkIns.length === 0
+              ? 'No check-in entries yet'
+              : `${checkIns.filter((c) => c.isSynthetic).length} synthetic demo entries included`}
           </div>
         </div>
       </section>

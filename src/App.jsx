@@ -34,17 +34,19 @@ export default function App() {
   // Application data state: initialized with our 6 synthetic past demo check-ins
   const [checkIns, setCheckIns] = useState(INITIAL_SYNTHETIC_CHECKINS);
 
-  // Today's date string ('YYYY-MM-DD'). Stored in state to keep rendering pure.
-  const [todayDate] = useState(() => getTodayDateString());
-
   /**
-   * Derived State: Find if there is an existing check-in matching today's date.
-   * `useMemo` caches this result so we only search the array when `checkIns` changes.
-   * Returns: the check-in object if found, or undefined if not yet recorded today.
+   * Derived State: Find if there is an existing check-in matching today's local date.
+   * By calling `getTodayDateString()` dynamically whenever `checkIns` updates,
+   * we ensure that if a student keeps the application open past midnight,
+   * the check-in status evaluates against the true current calendar date rather
+   * than a stale date frozen when the page was first loaded.
+   * 
+   * Returns: the check-in object if found for today, or undefined if not yet recorded.
    */
   const todayCheckIn = useMemo(() => {
-    return checkIns.find((item) => item.date === todayDate);
-  }, [checkIns, todayDate]);
+    const currentLocalDate = getTodayDateString();
+    return checkIns.find((item) => item.date === currentLocalDate);
+  }, [checkIns]);
 
   /**
    * Save Handler Callback:

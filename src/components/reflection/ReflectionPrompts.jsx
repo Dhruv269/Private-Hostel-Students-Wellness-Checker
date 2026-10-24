@@ -51,16 +51,32 @@ export default function ReflectionPrompts() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {STATIC_REFLECTION_PROMPTS.map((item) => {
             const isSelected = selectedPrompt?.id === item.id;
+            // Keyboard-accessible prompt card:
+            // Using role="button", tabIndex={0}, and onKeyDown allows keyboard users
+            // to navigate with Tab and select the card with Enter or Space.
+            // (We use a container div with role="button" because nesting an HTML <button> 
+            // inside another HTML <button> for the Copy button is invalid HTML).
             return (
               <div 
                 key={item.id} 
+                role="button"
+                tabIndex={0}
+                aria-pressed={isSelected}
+                aria-label={`Select reflection prompt on ${item.category}`}
                 className={`card ${isSelected ? 'card-elevated' : ''}`}
                 style={{ 
                   cursor: 'pointer',
                   borderColor: isSelected ? 'var(--color-primary-light)' : 'var(--border-subtle)',
-                  transition: 'all var(--transition-fast)'
+                  transition: 'all var(--transition-fast)',
+                  textAlign: 'left'
                 }}
                 onClick={() => setSelectedPrompt(item)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setSelectedPrompt(item);
+                  }
+                }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                   <span className="badge badge-calm" style={{ fontSize: '0.75rem' }}>
