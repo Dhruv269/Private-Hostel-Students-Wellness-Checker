@@ -69,17 +69,26 @@ export default function Footer({ setActiveTab }) {
         <div>
           <h4 style={{ fontSize: '0.9rem', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>Verified Indian Helplines</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+            {/* Actionable tel: links enable 1-tap dialing on mobile devices in case of urgent distress */}
             <div>
               <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.85rem' }}>Tele-MANAS (24/7)</div>
-              <div style={{ color: 'var(--color-primary-light)', fontSize: '0.9rem', fontWeight: 600 }}>14416 / 1800 891 4416</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>
+                <a href="tel:14416" style={{ color: 'var(--color-primary-light)' }}>14416</a>
+                <span style={{ color: 'var(--text-muted)' }}> / </span>
+                <a href="tel:18008914416" style={{ color: 'var(--color-primary-light)' }}>1800 891 4416</a>
+              </div>
             </div>
             <div>
               <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.85rem' }}>KIRAN (Govt Helpline)</div>
-              <div style={{ color: 'var(--color-primary-light)', fontSize: '0.9rem', fontWeight: 600 }}>1800-599-0019</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>
+                <a href="tel:18005990019" style={{ color: 'var(--color-primary-light)' }}>1800-599-0019</a>
+              </div>
             </div>
             <div>
               <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.85rem' }}>National Emergency</div>
-              <div style={{ color: 'var(--color-stress)', fontSize: '0.9rem', fontWeight: 700 }}>112</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>
+                <a href="tel:112" style={{ color: 'var(--color-stress)' }}>112</a>
+              </div>
             </div>
           </div>
         </div>
