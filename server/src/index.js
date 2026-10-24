@@ -22,10 +22,17 @@ app.set('trust proxy', 1);
 
 // 2. Strict CORS policy: Allow configured frontend origin and local dev hosts
 const isAllowedOrigin = (origin) => {
-  if (!origin || origin === config.CLIENT_URL) return true;
+  if (!origin) return true;
+  const normalizedOrigin = origin.replace(/\/+$/, '');
+
+  // Match against exact configured production frontend origin(s)
+  if (config.allowedClientOrigins.includes(normalizedOrigin)) {
+    return true;
+  }
+
   // Authorize local Vite development origins (localhost and 127.0.0.1 on ports 5173-5179)
   const localDevPattern = /^http:\/\/(localhost|127\.0\.0\.1):(517[3-9]|518\d)$/;
-  return localDevPattern.test(origin);
+  return localDevPattern.test(normalizedOrigin);
 };
 
 const corsOptions = {
@@ -79,11 +86,11 @@ app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
 });
 
 // 8. Start Listening
-const server = app.listen(config.PORT, () => {
+const server = app.listen(config.PORT, config.HOST, () => {
   console.log(`\n======================================================`);
   console.log(`🌱 HostelWell Backend Server running`);
-  console.log(`📡 URL: http://localhost:${config.PORT}`);
-  console.log(`🔒 Allowed Client Origin: ${config.CLIENT_URL}`);
+  console.log(`📡 Host: ${config.HOST} | Port: ${config.PORT}`);
+  console.log(`🔒 Allowed Client Origin(s): ${config.allowedClientOrigins.join(', ')}`);
   console.log(`🤖 Configured Model: ${config.GEMMA_MODEL_ID}`);
   console.log(`🔑 Key Configured: ${config.isKeyConfigured ? 'Yes (Active)' : 'No (Requires GEMINI_API_KEY in server/.env)'}`);
   console.log(`======================================================\n`);

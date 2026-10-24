@@ -93,7 +93,7 @@ export default function PrivacyNotice() {
           </p>
           <ul className="privacy-section-list">
             <li><strong>Zero Server Logging:</strong> The local Express server receives the chat array in memory to query Gemma. It does not write your conversation to disk, database, or server logs.</li>
-            <li><strong>Restricted CORS:</strong> The backend server on port 5002 only accepts connections originating from your local application.</li>
+            <li><strong>Restricted CORS:</strong> The backend server only accepts connections originating from authorized application origins.</li>
             <li><strong>Secret Protection:</strong> Google GenAI SDK keys remain server-side in <code>server/.env</code> and are never leaked to client bundles.</li>
           </ul>
         </section>

@@ -17,8 +17,17 @@ const __dirname = path.dirname(__filename);
 // Explicitly load .env from the server root directory
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
+const HOST = process.env.HOST || '0.0.0.0';
 const PORT = parseInt(process.env.PORT, 10) || 5002;
-const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+
+// Allowed frontend client origin(s) for CORS.
+// Supports single origin or comma-separated origins (e.g. "https://hostelwell.vercel.app,http://localhost:5173")
+const rawClientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+const allowedClientOrigins = rawClientUrl
+  .split(',')
+  .map((url) => url.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
+
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
 // Default candidate model verified for Google AI Developers / Gemini API hosted Gemma models
@@ -39,9 +48,12 @@ const isKeyConfigured = Boolean(
 );
 
 export const config = {
+  HOST,
   PORT,
-  CLIENT_URL,
+  CLIENT_URL: rawClientUrl,
+  allowedClientOrigins,
   GEMINI_API_KEY,
   GEMMA_MODEL_ID,
   isKeyConfigured
 };
+

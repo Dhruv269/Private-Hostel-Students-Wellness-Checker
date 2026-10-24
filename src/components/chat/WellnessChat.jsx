@@ -35,8 +35,9 @@ import {
   Volume2,
   Play
 } from 'lucide-react';
+import { CHAT_API_URL, BACKEND_DISPLAY_LABEL } from '../../utils/apiConfig';
 
-const BACKEND_CHAT_URL = 'http://localhost:5002/api/chat';
+const BACKEND_CHAT_URL = CHAT_API_URL;
 
 // Browser Web Speech API detection (speech-to-text)
 const SpeechRecognitionAPI = typeof window !== 'undefined'
@@ -595,9 +596,9 @@ export default function WellnessChat({ setActiveTab }) {
         let errorDetail = data?.error;
         if (!errorDetail) {
           if (response.status === 403) {
-            errorDetail = 'CORS blocked: The server on port 5002 did not authorize this browser origin.';
+            errorDetail = 'CORS blocked: The server did not authorize this browser origin.';
           } else if (response.status === 404) {
-            errorDetail = 'Endpoint not found at http://localhost:5002/api/chat.';
+            errorDetail = `Endpoint not found at ${CHAT_API_URL}.`;
           } else if (response.status === 429) {
             errorDetail = 'Rate limit reached. Please pause a moment before checking in again.';
           } else if (response.status === 504) {
@@ -638,7 +639,7 @@ export default function WellnessChat({ setActiveTab }) {
       let displayError = err.message || 'Unable to communicate with the backend.';
       // Provide clear guidance for browser network failures (e.g. CORS block or offline backend)
       if (err.name === 'TypeError' && err.message?.toLowerCase().includes('fetch')) {
-        displayError = 'Unable to connect to http://localhost:5002/api/chat. Please ensure the backend server is running on port 5002 and CORS is authorized.';
+        displayError = `Unable to connect to ${CHAT_API_URL}. Please ensure the backend server is running and CORS is authorized.`;
       }
 
       setErrorMessage(displayError);
@@ -693,7 +694,7 @@ export default function WellnessChat({ setActiveTab }) {
                   ● Gemma MoE (gemma-4-26b-a4b-it)
                 </span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                  Local Port 5002
+                  {BACKEND_DISPLAY_LABEL}
                 </span>
               </div>
             </div>

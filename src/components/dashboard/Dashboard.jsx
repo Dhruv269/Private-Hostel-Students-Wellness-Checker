@@ -23,6 +23,7 @@ import gsap from 'gsap';
 import WellnessOrb3D from '../common/WellnessOrb3D';
 import { STATIC_REFLECTION_PROMPTS, getMoodById } from '../../data/mockData';
 import { getTodayDateString, formatDisplayDate, getShortDayName } from '../../utils/dateUtils';
+import { isLocalBackend } from '../../utils/apiConfig';
 
 const MOOD_ICONS = {
   great: Sparkles,
@@ -424,7 +425,7 @@ export default function Dashboard({
               <MessageSquare size={18} className="bento-title-icon-emerald" aria-hidden="true" />
               <h2 className="bento-card-title">AI Reflection Companion</h2>
             </div>
-            <span className="bento-badge badge-emerald">Gemma MoE • Port 5002</span>
+            <span className="bento-badge badge-emerald">Gemma MoE • {isLocalBackend ? 'Port 5002' : 'Active'}</span>
           </div>
           <p className="bento-card-desc">
             Feeling overwhelmed by exams, mess routines, or hostel friction? Talk it through with our private empathetic listener in browser RAM.
@@ -531,7 +532,7 @@ export default function Dashboard({
             <div className="architecture-note-text">
               <h3 className="architecture-note-title">Private & In-Memory Session Boundary</h3>
               <p className="architecture-note-desc">
-                Your check-in reflections exist only in browser memory for this session and are never saved to an external database. The companion connects locally to the Gemma MoE backend on port 5002 for empathetic listening.
+                Your check-in reflections exist only in browser memory for this session and are never saved to an external database. The companion connects to the Gemma MoE backend for empathetic listening.
               </p>
             </div>
           </div>
