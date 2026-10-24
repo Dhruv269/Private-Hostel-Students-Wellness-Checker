@@ -5,6 +5,7 @@
   "type": "module",
   "description": "Secure Node.js & Express backend for HostelWell with hosted Google Gemma model support",
   "scripts": {
+    "build": "echo 'No build step required for Express backend'",
     "start": "node src/index.js",
     "dev": "node --watch src/index.js"
   },
