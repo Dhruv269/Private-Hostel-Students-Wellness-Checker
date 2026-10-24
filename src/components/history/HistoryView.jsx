@@ -79,36 +79,6 @@ function TrendBarChart({ title, icon, description, data, property, barColorClass
         {description}
       </p>
 
-<<<<<<< HEAD
-      {/* 
-        Chart bars rendered with semantic HTML & CSS Grid.
-        Height is calculated as a percentage: (value / 5) * 100
-      */}
-      <div className="trend-bars-wrapper" aria-label={`${title} over the past 7 days`}>
-        {data.map((item, index) => {
-          const value = getValidScaleValue(item[property]);
-          const heightPercent = value === null ? 0 : (value / 5) * 100;
-          const dayName = getValidDate(item.date) ? getShortDayName(item.date) : 'Unknown';
-          const isHighStress = isStress && value !== null && value >= 4;
-
-          return (
-            <div key={item.id || `${item.date || 'entry'}-${property}-${index}`} className="trend-column">
-              <span style={{ 
-                fontSize: '0.75rem', 
-                fontWeight: 600, 
-                color: isHighStress ? 'var(--color-stress)' : 'var(--text-primary)' 
-              }}>
-                {value ?? '—'}
-              </span>
-
-              <div className="trend-bar-wrapper">
-                <div 
-                  className={`trend-bar ${barColorClass}`} 
-                  style={{ height: `${heightPercent}%` }}
-                  title={`${dayName}: ${property} ${value === null ? 'not recorded' : `${value}/5`}`}
-                />
-              </div>
-=======
       {/* Empty State: If no check-ins exist, show clear feedback rather than an empty box */}
       {data.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
@@ -127,30 +97,29 @@ function TrendBarChart({ title, icon, description, data, property, barColorClass
             style={data.length < 7 ? { gridTemplateColumns: `repeat(${data.length}, 1fr)` } : undefined}
             aria-label={`${title} over recent check-ins`}
           >
-            {data.map((item) => {
-              const value = Number(item[property]);
-              const heightPercent = (value / 5) * 100;
-              const dayName = getShortDayName(item.date);
-              const isHighStress = isStress && value >= 4;
+            {data.map((item, index) => {
+              const value = getValidScaleValue(item[property]);
+              const heightPercent = value === null ? 0 : (value / 5) * 100;
+              const dayName = getValidDate(item.date) ? getShortDayName(item.date) : 'Unknown';
+              const isHighStress = isStress && value !== null && value >= 4;
 
               return (
-                <div key={item.id} className="trend-column">
+                <div key={item.id || `${item.date || 'entry'}-${property}-${index}`} className="trend-column">
                   <span style={{ 
                     fontSize: '0.75rem', 
                     fontWeight: 600, 
                     color: isHighStress ? 'var(--color-stress)' : 'var(--text-primary)' 
                   }}>
-                    {value}
+                    {value ?? '—'}
                   </span>
 
                   <div className="trend-bar-wrapper">
                     <div 
                       className={`trend-bar ${barColorClass}`} 
                       style={{ height: `${heightPercent}%` }}
-                      title={`${dayName}: ${property} ${value}/5`}
+                      title={`${dayName}: ${property} ${value === null ? 'not recorded' : `${value}/5`}`}
                     />
                   </div>
->>>>>>> origin/main
 
                   <span className="trend-day-label">{dayName}</span>
                 </div>
@@ -176,8 +145,7 @@ export default function HistoryView({ checkIns, setActiveTab }) {
   // Toggle between 'trends' (visual charts) and 'timeline' (list)
   const [activeViewMode, setActiveViewMode] = useState('trends');
 
-<<<<<<< HEAD
-  // Sort check-ins in reverse chronological order (newest first) for the timeline
+  // Sort check-ins in reverse chronological order (newest first) for the timeline list
   const sortedCheckIns = [...entries].sort((a, b) => {
     const dateA = getValidDate(a.date);
     const dateB = getValidDate(b.date);
@@ -185,17 +153,15 @@ export default function HistoryView({ checkIns, setActiveTab }) {
     return dateB - dateA;
   });
 
-  // Slice the 7 most recent entries for the trend charts
-  const last7Days = [...entries].slice(-7);
-=======
-  // Sort check-ins in reverse chronological order (newest first) for the timeline list
-  const sortedCheckIns = [...checkIns].sort((a, b) => new Date(b.date) - new Date(a.date));
-
   // For the trend charts, sort in chronological order (oldest to newest) and take the 7 most recent
-  const last7Days = [...checkIns]
-    .sort((a, b) => new Date(a.date) - new Date(b.date))
+  const last7Days = [...entries]
+    .sort((a, b) => {
+      const dateA = getValidDate(a.date);
+      const dateB = getValidDate(b.date);
+      if (!dateA || !dateB) return dateA ? 1 : dateB ? -1 : 0;
+      return dateA - dateB;
+    })
     .slice(-7);
->>>>>>> origin/main
 
   // Count how many days each mood was recorded using a simple, readable loop
   const moodCounts = {};
