@@ -21,10 +21,33 @@ import {
   BatteryMedium, 
   TrendingUp, 
   Info,
-  Clock
+  Clock,
+  PenLine
 } from 'lucide-react';
 import { MOOD_DEFINITIONS, getMoodById } from '../../data/mockData';
 import { formatDisplayDate, getShortDayName } from '../../utils/dateUtils';
+
+function getValidDate(dateValue) {
+  if (typeof dateValue !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+    return null;
+  }
+
+  const date = new Date(`${dateValue}T00:00:00Z`);
+  return Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== dateValue
+    ? null
+    : date;
+}
+
+function getValidScaleValue(value) {
+  if (value === null || value === undefined || (typeof value === 'string' && !value.trim())) {
+    return null;
+  }
+
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) && numericValue >= 1 && numericValue <= 5
+    ? numericValue
+    : null;
+}
 
 /**
  * Reusable Trend Bar Chart Component
@@ -61,27 +84,27 @@ function TrendBarChart({ title, icon, description, data, property, barColorClass
         Height is calculated as a percentage: (value / 5) * 100
       */}
       <div className="trend-bars-wrapper" aria-label={`${title} over the past 7 days`}>
-        {data.map((item) => {
-          const value = Number(item[property]);
-          const heightPercent = (value / 5) * 100;
-          const dayName = getShortDayName(item.date);
-          const isHighStress = isStress && value >= 4;
+        {data.map((item, index) => {
+          const value = getValidScaleValue(item[property]);
+          const heightPercent = value === null ? 0 : (value / 5) * 100;
+          const dayName = getValidDate(item.date) ? getShortDayName(item.date) : 'Unknown';
+          const isHighStress = isStress && value !== null && value >= 4;
 
           return (
-            <div key={item.id} className="trend-column">
+            <div key={item.id || `${item.date || 'entry'}-${property}-${index}`} className="trend-column">
               <span style={{ 
                 fontSize: '0.75rem', 
                 fontWeight: 600, 
                 color: isHighStress ? 'var(--color-stress)' : 'var(--text-primary)' 
               }}>
-                {value}
+                {value ?? '—'}
               </span>
 
               <div className="trend-bar-wrapper">
                 <div 
                   className={`trend-bar ${barColorClass}`} 
                   style={{ height: `${heightPercent}%` }}
-                  title={`${dayName}: ${property} ${value}/5`}
+                  title={`${dayName}: ${property} ${value === null ? 'not recorded' : `${value}/5`}`}
                 />
               </div>
 
@@ -99,25 +122,38 @@ function TrendBarChart({ title, icon, description, data, property, barColorClass
   );
 }
 
-export default function HistoryView({ checkIns }) {
+export default function HistoryView({ checkIns, setActiveTab }) {
+  const entries = Array.isArray(checkIns)
+    ? checkIns.filter((item) => item && typeof item === 'object')
+    : [];
+
   // Toggle between 'trends' (visual charts) and 'timeline' (list)
   const [activeViewMode, setActiveViewMode] = useState('trends');
 
   // Sort check-ins in reverse chronological order (newest first) for the timeline
-  const sortedCheckIns = [...checkIns].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const sortedCheckIns = [...entries].sort((a, b) => {
+    const dateA = getValidDate(a.date);
+    const dateB = getValidDate(b.date);
+    if (!dateA || !dateB) return dateA ? -1 : dateB ? 1 : 0;
+    return dateB - dateA;
+  });
 
   // Slice the 7 most recent entries for the trend charts
-  const last7Days = [...checkIns].slice(-7);
+  const last7Days = [...entries].slice(-7);
 
   // Count how many days each mood was recorded using a simple, readable loop
   const moodCounts = {};
-  for (const checkIn of checkIns) {
-    const m = checkIn.mood;
-    moodCounts[m] = (moodCounts[m] || 0) + 1;
+  for (const checkIn of entries) {
+    if (typeof checkIn.mood === 'string' && checkIn.mood.trim()) {
+      const moodKey = checkIn.mood.trim();
+      moodCounts[moodKey] = (moodCounts[moodKey] || 0) + 1;
+    }
   }
+  const hasActualCheckIns = entries.some((entry) => entry.isSynthetic === false);
+  const hasSampleEntries = entries.some((entry) => entry.isSynthetic === true);
 
   return (
-    <div>
+    <div className="history-page">
       {/* Header and View Mode Toggle */}
       <div className="history-controls">
         <div>
@@ -134,6 +170,7 @@ export default function HistoryView({ checkIns }) {
             type="button"
             className={`toggle-btn ${activeViewMode === 'trends' ? 'active' : ''}`}
             onClick={() => setActiveViewMode('trends')}
+            aria-pressed={activeViewMode === 'trends'}
           >
             <BarChart3 size={15} style={{ display: 'inline', marginRight: '0.35rem', verticalAlign: 'text-bottom' }} aria-hidden="true" />
             Trends & Patterns
@@ -142,12 +179,37 @@ export default function HistoryView({ checkIns }) {
             type="button"
             className={`toggle-btn ${activeViewMode === 'timeline' ? 'active' : ''}`}
             onClick={() => setActiveViewMode('timeline')}
+            aria-pressed={activeViewMode === 'timeline'}
           >
             <Clock size={15} style={{ display: 'inline', marginRight: '0.35rem', verticalAlign: 'text-bottom' }} aria-hidden="true" />
-            Timeline Logs ({checkIns.length})
+            Timeline Logs ({entries.length})
           </button>
         </div>
       </div>
+
+      {!hasActualCheckIns && (
+        <section className="history-empty-state" aria-labelledby="history-empty-title">
+          <div className="card history-empty-card">
+            <div className="history-empty-icon" aria-hidden="true">
+              <Calendar size={36} />
+            </div>
+            <h2 id="history-empty-title">Your wellness journey starts here.</h2>
+            <p>
+              {hasSampleEntries
+                ? 'You have not recorded a personal check-in yet. Sample entries below are examples, not your history.'
+                : 'Completed check-ins will appear here, giving you a private place to review your reflections over time.'}
+            </p>
+            <button
+              type="button"
+              className="btn btn-primary history-empty-cta"
+              onClick={() => setActiveTab('checkin')}
+            >
+              <PenLine size={18} aria-hidden="true" />
+              <span>Complete your first check-in</span>
+            </button>
+          </div>
+        </section>
+      )}
 
       {/* Notice regarding synthetic demo data */}
       <div style={{ 
@@ -239,60 +301,75 @@ export default function HistoryView({ checkIns }) {
           SUBVIEW 2: Chronological Timeline Log List
           ==================================================================== */}
       {activeViewMode === 'timeline' && (
-        <div className="checkin-list" role="feed" aria-label="Timeline of past check-ins">
+        <section className="checkin-list" aria-label="Timeline of past check-ins">
           {sortedCheckIns.length === 0 ? (
-            <div className="card" style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
-              <Calendar size={36} style={{ color: 'var(--text-muted)', margin: '0 auto 1rem auto' }} aria-hidden="true" />
-              <h3>No check-ins recorded yet</h3>
-              <p>Your logged check-ins will appear here.</p>
+            <div className="card history-no-entries">
+              <h2>No check-ins recorded yet</h2>
+              <p>Your completed check-ins will appear here.</p>
             </div>
-          ) : (
-            sortedCheckIns.map((item) => {
-              const moodObj = getMoodById(item.mood);
-              return (
-                <article key={item.id} className="checkin-item">
-                  <div className="checkin-item-header">
-                    <div className="checkin-date-group">
-                      <span style={{ fontSize: '1.4rem' }} aria-hidden="true">{moodObj?.emoji || '✨'}</span>
-                      <div>
-                        <div className="checkin-date">{formatDisplayDate(item.date)}</div>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                          Mood: {moodObj?.label || item.mood}
-                          {item.timestamp ? ` • ${item.timestamp}` : ''}
-                        </div>
-                      </div>
-                    </div>
+          ) : sortedCheckIns.map((item, index) => {
+            const moodObj = getMoodById(item.mood);
+            const moodLabel = moodObj?.label
+              || (typeof item.mood === 'string' && item.mood.trim() ? item.mood : 'Not recorded');
+            const date = getValidDate(item.date);
+            const dateLabel = date ? formatDisplayDate(item.date) : 'Date unavailable';
+            const timestamp = typeof item.timestamp === 'string' ? item.timestamp.trim() : '';
+            const note = typeof item.note === 'string' ? item.note.trim() : '';
+            const stress = getValidScaleValue(item.stress);
+            const energy = getValidScaleValue(item.energy);
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      {item.isSynthetic ? (
-                        <span className="badge badge-demo">Sample Demo Data</span>
-                      ) : (
-                        <span className="badge badge-live">Recorded in Current Session</span>
-                      )}
+            return (
+              <article key={item.id || `checkin-${index}`} className="checkin-item">
+                <div className="checkin-item-header">
+                  <div className="checkin-date-group">
+                    <span style={{ fontSize: '1.4rem' }} aria-hidden="true">{moodObj?.emoji || '✨'}</span>
+                    <div className="history-entry-details">
+                      <h2 className="checkin-date">{dateLabel}</h2>
+                      <p className="history-entry-subtitle">
+                        Mood: {moodLabel}
+                        {timestamp && ` • ${timestamp}`}
+                      </p>
                     </div>
                   </div>
 
-                  <div className="checkin-metrics">
+                  <div className="history-entry-badge">
+                    {item.isSynthetic ? (
+                      <span className="badge badge-demo">Sample Demo Data</span>
+                    ) : item.isSynthetic === false ? (
+                      <span className="badge badge-live">Recorded in Current Session</span>
+                    ) : (
+                      <span className="badge badge-calm">Record type unavailable</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="checkin-metrics" aria-label="Wellness ratings">
+                  {stress !== null && (
                     <span className="metric-pill">
-                      <Activity size={14} style={{ color: item.stress >= 4 ? 'var(--color-stress)' : 'var(--text-secondary)' }} aria-hidden="true" />
-                      <span>Stress: <strong>{item.stress}/5</strong></span>
+                      <Activity size={14} style={{ color: stress >= 4 ? 'var(--color-stress)' : 'var(--text-secondary)' }} aria-hidden="true" />
+                      <span>Stress: <strong>{stress}/5</strong></span>
                     </span>
+                  )}
+                  {energy !== null && (
                     <span className="metric-pill">
                       <BatteryMedium size={14} style={{ color: 'var(--color-primary-light)' }} aria-hidden="true" />
-                      <span>Energy: <strong>{item.energy}/5</strong></span>
+                      <span>Energy: <strong>{energy}/5</strong></span>
                     </span>
-                  </div>
-
-                  {item.note && (
-                    <div className="checkin-note">
-                      "{item.note}"
-                    </div>
                   )}
-                </article>
-              );
-            })
-          )}
-        </div>
+                  {stress === null && energy === null && (
+                    <span className="history-missing-value">No wellness ratings recorded</span>
+                  )}
+                </div>
+
+                {note && (
+                  <div className="checkin-note">
+                    “{note}”
+                  </div>
+                )}
+              </article>
+            );
+          })}
+        </section>
       )}
     </div>
   );

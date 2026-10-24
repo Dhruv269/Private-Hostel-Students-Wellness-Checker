@@ -80,7 +80,7 @@ export default function App() {
       */}
       <Navbar 
         activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
+        setActiveTab={setActiveTab}
         hasCheckedInToday={Boolean(todayCheckIn)} 
       />
 
@@ -105,6 +105,7 @@ export default function App() {
         {activeTab === 'history' && (
           <HistoryView 
             checkIns={checkIns} 
+            setActiveTab={setActiveTab}
           />
         )}
 
