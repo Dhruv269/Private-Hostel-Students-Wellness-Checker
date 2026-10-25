@@ -28,12 +28,31 @@ function getInitialTheme() {
   return 'dark';
 }
 
+function getInitialCalmMode() {
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem('hostelwell-calm-mode');
+      if (saved === 'true') return true;
+      if (saved === 'false') return false;
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return true;
+      }
+    } catch {
+      // Ignore read errors
+    }
+  }
+  return false;
+}
+
 export default function App() {
   // Navigation state: determines which page/tab is currently visible
   const [activeTab, setActiveTab] = useState('dashboard');
 
   // Theme state: defaults to dark for cinematic aesthetic
   const [theme, setTheme] = useState(getInitialTheme);
+
+  // User-controlled Calm Mode: softens motion, reduces glow, stills parallax
+  const [calmMode, setCalmMode] = useState(getInitialCalmMode);
 
   // Sync theme attribute on <html> and persist to localStorage
   useEffect(() => {
@@ -45,8 +64,22 @@ export default function App() {
     }
   }, [theme]);
 
+  // Sync calm mode attribute on <html> and persist to localStorage
+  useEffect(() => {
+    document.documentElement.setAttribute('data-calm-mode', calmMode ? 'true' : 'false');
+    try {
+      localStorage.setItem('hostelwell-calm-mode', calmMode ? 'true' : 'false');
+    } catch {
+      // Ignore storage errors
+    }
+  }, [calmMode]);
+
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
+  const toggleCalmMode = () => {
+    setCalmMode((prev) => !prev);
   };
 
   // Lenis smooth scrolling integration with active resize handling
@@ -131,20 +164,22 @@ export default function App() {
 
   return (
     <div className="app-container">
-      {/* Immersive cinematic background layers */}
+      {/* Immersive Midnight Sanctuary background layers */}
       <div className="app-ambient-background" aria-hidden="true">
-        <div className="ambient-glow-top" />
-        <div className="ambient-glow-bottom" />
-        <div className="ambient-grid-overlay" />
+        <div className="ambient-nebula-top" />
+        <div className="ambient-nebula-bottom" />
+        <div className="ambient-celestial-dust" />
       </div>
 
-      {/* Floating Oval Glass Navbar */}
+      {/* Floating Oval Glass Navbar with Calm Mode and Theme Toggles */}
       <Navbar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab}
         hasCheckedInToday={Boolean(todayCheckIn)} 
         theme={theme}
         toggleTheme={toggleTheme}
+        calmMode={calmMode}
+        toggleCalmMode={toggleCalmMode}
       />
 
       {/* Main Content Area */}
@@ -154,6 +189,7 @@ export default function App() {
             checkIns={checkIns} 
             todayCheckIn={todayCheckIn} 
             setActiveTab={setActiveTab} 
+            calmMode={calmMode}
           />
         )}
 
@@ -189,8 +225,14 @@ export default function App() {
         )}
       </main>
 
-      {/* Refined Dark Glass Footer */}
-      <Footer setActiveTab={setActiveTab} theme={theme} toggleTheme={toggleTheme} />
+      {/* Refined Midnight Glass Footer with Calm Mode Status */}
+      <Footer 
+        setActiveTab={setActiveTab} 
+        theme={theme} 
+        toggleTheme={toggleTheme} 
+        calmMode={calmMode}
+        toggleCalmMode={toggleCalmMode}
+      />
     </div>
   );
 }

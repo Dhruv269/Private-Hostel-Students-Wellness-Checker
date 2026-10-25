@@ -10,13 +10,20 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <!-- Immediate theme restoration to prevent theme flashing -->
+    <!-- Immediate theme & calm mode restoration to prevent flashing -->
     <script>
       (function() {
         try {
-          var saved = localStorage.getItem('hostelwell-theme');
-          var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          var savedTheme = localStorage.getItem('hostelwell-theme');
+          var theme = savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
           document.documentElement.setAttribute('data-theme', theme);
+
+          var savedCalm = localStorage.getItem('hostelwell-calm-mode');
+          var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          var isCalm = savedCalm !== null ? savedCalm === 'true' : prefersReducedMotion;
+          if (isCalm) {
+            document.documentElement.setAttribute('data-calm-mode', 'true');
+          }
         } catch (e) {}
       })();
     </script>

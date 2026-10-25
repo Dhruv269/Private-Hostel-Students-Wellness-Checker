@@ -17,7 +17,8 @@ import {
   Smile, 
   Meh, 
   CloudRain, 
-  Flame 
+  Flame,
+  Wind
 } from 'lucide-react';
 import gsap from 'gsap';
 import WellnessOrb3D from '../common/WellnessOrb3D';
@@ -46,22 +47,46 @@ function calculateAverage(list, property) {
 }
 
 /**
- * Calculates a welcoming time-of-day greeting for students.
+ * Provides a soothing, time-aware greeting tailored to the rhythm of student hostel life.
  */
-function getTimeOfDayGreeting() {
+function getTimeContext() {
   const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) return 'Good morning';
-  if (hour >= 12 && hour < 17) return 'Good afternoon';
-  if (hour >= 17 && hour < 22) return 'Good evening';
-  return 'Late night sanctuary';
+  if (hour >= 5 && hour < 12) {
+    return {
+      period: 'Morning Solitude',
+      subtitle: 'A quiet start before the hostel corridors wake'
+    };
+  }
+  if (hour >= 12 && hour < 17) {
+    return {
+      period: 'Midday Pause',
+      subtitle: 'Take a mindful breath between lectures and labs'
+    };
+  }
+  if (hour >= 17 && hour < 22) {
+    return {
+      period: 'Twilight Reset',
+      subtitle: 'Unpack the day’s weight as evening sets in'
+    };
+  }
+  return {
+    period: 'Midnight Sanctuary',
+    subtitle: 'Rest your mind away from room and corridor noise'
+  };
 }
 
 export default function Dashboard({ 
   checkIns, 
   todayCheckIn, 
-  setActiveTab 
+  setActiveTab,
+  calmMode = false
 }) {
   const [promptIndex, setPromptIndex] = useState(0);
+  const [isFlippingPrompt, setIsFlippingPrompt] = useState(false);
+  const [selectedDayIndex, setSelectedDayIndex] = useState(null);
+  const [breathingActive, setBreathingActive] = useState(false);
+  const [breathPhase, setBreathPhase] = useState('Inhale');
+
   const dashboardRef = useRef(null);
 
   // Take up to 7 most recent check-in records for weekly metrics
@@ -91,16 +116,32 @@ export default function Dashboard({
   const currentPrompt = STATIC_REFLECTION_PROMPTS[promptIndex % STATIC_REFLECTION_PROMPTS.length];
 
   const handleNextPrompt = () => {
-    setPromptIndex((prevIndex) => (prevIndex + 1) % STATIC_REFLECTION_PROMPTS.length);
+    setIsFlippingPrompt(true);
+    setTimeout(() => {
+      setPromptIndex((prevIndex) => (prevIndex + 1) % STATIC_REFLECTION_PROMPTS.length);
+      setIsFlippingPrompt(false);
+    }, 180);
   };
 
   const todayMoodObj = todayCheckIn ? getMoodById(todayCheckIn.mood) : null;
   const todayFormatted = formatDisplayDate(getTodayDateString());
-  const timeGreeting = getTimeOfDayGreeting();
+  const timeContext = getTimeContext();
+
+  // 4-7-8 Guided Mindful Breather micro-interaction loop
+  useEffect(() => {
+    if (!breathingActive) return;
+    const phases = ['Inhale', 'Hold', 'Exhale', 'Pause'];
+    let step = 0;
+    const timer = setInterval(() => {
+      step = (step + 1) % phases.length;
+      setBreathPhase(phases[step]);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [breathingActive]);
 
   // Purposeful GSAP Hero & Bento Entrance Animations (Robust fromTo with clearProps)
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || calmMode) {
       return;
     }
 
@@ -130,7 +171,7 @@ export default function Dashboard({
         { opacity: 0, scale: 0.92 }, 
         { opacity: 1, scale: 1, duration: 0.8, delay: 0.05, ease: 'power2.out', clearProps: 'all' }
       );
-      // Bento cards gently rise without zero-opacity locks so they are ALWAYS visible
+      // Bento cards rise gently without permanent zero-opacity locks
       gsap.fromTo(
         '.gsap-bento-card',
         { y: 14 },
@@ -146,32 +187,32 @@ export default function Dashboard({
     }, dashboardRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [calmMode]);
 
   return (
     <div className="dashboard-cinematic-wrapper" ref={dashboardRef}>
       {/* 
         ========================================================================
-        HERO SECTION: Asymmetric Composition with 3D Centerpiece & Date Header
+        HERO SECTION: Midnight Sanctuary Threshold with 3D Orb & Time Context
         ========================================================================
       */}
       <section className="dashboard-hero-section" aria-labelledby="dashboard-hero-title">
         <div className="dashboard-hero-grid">
-          {/* Left Column: Typography, Date & Intentional Actions */}
+          {/* Left Column: Typography, Context & Sanctuary CTAs */}
           <div className="dashboard-hero-copy">
             <div className="hero-pill-badge gsap-hero-badge">
               <Sparkles size={14} className="hero-pill-icon" aria-hidden="true" />
-              <span>{timeGreeting} • {todayFormatted} • Find Your Balance</span>
+              <span>{timeContext.period} • {todayFormatted}</span>
             </div>
 
             {!todayCheckIn ? (
               <>
                 <h1 id="dashboard-hero-title" className="hero-headline gsap-hero-title">
-                  HostelWell — <br />
-                  <span className="hero-headline-accent">Find Your Balance.</span>
+                  Welcome to your <br />
+                  <span className="hero-headline-accent">digital sanctuary.</span>
                 </h1>
                 <p className="hero-lead gsap-hero-desc">
-                  A private, calm sanctuary to observe your academic stress, daily energy, and emotional state. In-memory and autonomous, designed for hostel students without surveillance.
+                  {timeContext.subtitle}. A private, judgment-free space to observe your academic stress, daily stamina, and emotional balance without surveillance.
                 </p>
                 <div className="hero-cta-group gsap-hero-actions">
                   <button 
@@ -180,7 +221,7 @@ export default function Dashboard({
                     onClick={() => setActiveTab('checkin')}
                   >
                     <PenLine size={16} aria-hidden="true" />
-                    <span>Record Today's Log</span>
+                    <span>Begin Daily Check-In</span>
                   </button>
                   <button 
                     type="button" 
@@ -203,11 +244,11 @@ export default function Dashboard({
             ) : (
               <>
                 <h1 id="dashboard-hero-title" className="hero-headline gsap-hero-title">
-                  Your Balance <br />
+                  Your equilibrium <br />
                   <span className="hero-headline-accent">is preserved today.</span>
                 </h1>
                 <p className="hero-lead gsap-hero-desc">
-                  Thank you for pausing for self-reflection. Your session metrics are active. Explore empathetic dialogue with the Gemma AI companion or review your 7-day wellness trends.
+                  Thank you for pausing for self-reflection. Your session metrics are active. Explore empathetic dialogue with the Gemma companion or review your 7-day wellness trends.
                 </p>
                 <div className="hero-cta-group gsap-hero-actions">
                   <button 
@@ -224,7 +265,7 @@ export default function Dashboard({
                     onClick={() => setActiveTab('checkin')}
                   >
                     <PenLine size={15} aria-hidden="true" />
-                    <span>Update Today's Log</span>
+                    <span>Adjust Today's Log</span>
                   </button>
                   <button 
                     type="button" 
@@ -237,23 +278,39 @@ export default function Dashboard({
                 </div>
               </>
             )}
+
+            {/* Mindful Breather Micro-Interaction Pill */}
+            <div className="hero-breather-container">
+              <button
+                type="button"
+                className={`hero-breather-pill ${breathingActive ? 'is-breathing-active' : ''}`}
+                onClick={() => setBreathingActive((prev) => !prev)}
+                aria-pressed={breathingActive}
+                aria-label={breathingActive ? "Stop guided breath" : "Start 4-second mindful breath"}
+              >
+                <Wind size={13} aria-hidden="true" />
+                <span>
+                  {breathingActive ? `Breathing: ${breathPhase} (4s)` : 'Pause for a 4-second breath'}
+                </span>
+              </button>
+            </div>
           </div>
 
           {/* Right Column: 3D Centerpiece Orb */}
           <div className="dashboard-hero-visual gsap-hero-orb">
             <div className="hero-visual-backdrop" aria-hidden="true" />
-            <WellnessOrb3D className="hero-3d-orb" />
+            <WellnessOrb3D className="hero-3d-orb" calmMode={calmMode} />
           </div>
         </div>
       </section>
 
       {/* 
         ========================================================================
-        BENTO SECTION: Comprehensive Wellness Overview & Trends
+        BENTO SECTION: Asymmetric Sanctuary Composition
         ========================================================================
       */}
       <section className="bento-grid-section" aria-label="Wellness overview and metrics">
-        {/* Bento 1: Today's Status Card (2-columns) */}
+        {/* Bento 1: Today's Status Sanctuary Card (2-columns) */}
         <div className={`bento-card bento-card-span-2 gsap-bento-card ${todayCheckIn ? 'bento-card-logged' : 'bento-card-pending'}`}>
           <div className="bento-card-header">
             <div className="bento-card-title-group">
@@ -294,7 +351,7 @@ export default function Dashboard({
           ) : (
             <div className="bento-status-empty">
               <p className="bento-status-empty-text">
-                You haven't logged your mood, stress, or stamina for today yet. It takes under 60 seconds to build self-awareness.
+                You haven't logged your state of mind or energy levels for today. A 60-second reflection helps ground your day amidst the hostel rush.
               </p>
               <button
                 type="button"
@@ -321,16 +378,25 @@ export default function Dashboard({
             </div>
           </div>
 
-          {/* Dual-bar mini chart for recent 7 days */}
+          {/* Dual-bar mini chart for recent 7 days with interactive inspector */}
           <div className="bento-trend-chart-body" aria-label="7-Day stress and energy comparison bars">
             <div className="bento-bars-grid">
               {recentCheckIns.map((item, idx) => {
                 const dayName = getShortDayName(item.date);
                 const stressHeight = (Number(item.stress) / 5) * 100;
                 const energyHeight = (Number(item.energy) / 5) * 100;
+                const isSelected = selectedDayIndex === idx;
 
                 return (
-                  <div key={item.id || idx} className="bento-bar-col">
+                  <button
+                    key={item.id || idx} 
+                    type="button"
+                    className={`bento-bar-col ${isSelected ? 'is-bar-selected' : ''}`}
+                    onClick={() => setSelectedDayIndex(isSelected ? null : idx)}
+                    onMouseEnter={() => setSelectedDayIndex(idx)}
+                    onMouseLeave={() => setSelectedDayIndex(null)}
+                    aria-label={`${dayName}: Stress ${item.stress}/5, Energy ${item.energy}/5`}
+                  >
                     <div 
                       className="bento-dual-bars-track" 
                       title={`${dayName}: Stress ${item.stress}/5, Energy ${item.energy}/5`}
@@ -345,14 +411,30 @@ export default function Dashboard({
                       />
                     </div>
                     <span className="bento-bar-day">{dayName}</span>
-                  </div>
+                  </button>
                 );
               })}
             </div>
+
+            {/* Interactive Inspector readout on hover/touch */}
+            {selectedDayIndex !== null && recentCheckIns[selectedDayIndex] && (
+              <div className="bento-day-inspector" role="status">
+                <span className="inspector-day">{getShortDayName(recentCheckIns[selectedDayIndex].date)}:</span>
+                <span className="inspector-stat">Stress {recentCheckIns[selectedDayIndex].stress}/5</span>
+                <span className="inspector-divider">•</span>
+                <span className="inspector-stat">Energy {recentCheckIns[selectedDayIndex].energy}/5</span>
+                {recentCheckIns[selectedDayIndex].mood && (
+                  <>
+                    <span className="inspector-divider">•</span>
+                    <span className="inspector-mood">{recentCheckIns[selectedDayIndex].moodLabel || recentCheckIns[selectedDayIndex].mood}</span>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="bento-card-footer">
-            <span className="bento-footer-note">Daily fluctuation comparison</span>
+            <span className="bento-footer-note">Hover or tap any bar for day details</span>
             <button
               type="button"
               className="bento-footer-link"
@@ -364,17 +446,17 @@ export default function Dashboard({
           </div>
         </div>
 
-        {/* Bento 3: 7-Day Mood Summary ⭐ Mood Summary */}
+        {/* Bento 3: 7-Day Dominant Mood Summary */}
         <div className="bento-card gsap-bento-card">
           <div className="bento-card-header">
-            <span className="bento-stat-label">7-Day Dominant Mood</span>
+            <span className="bento-stat-label">7-Day Dominant State</span>
             <DominantMoodIcon size={17} className="bento-icon-emerald" aria-hidden="true" />
           </div>
           <div className="bento-stat-number bento-stat-emerald">
             {dominantMoodObj?.label || 'Good'}
           </div>
           <p className="bento-stat-desc">
-            Recorded {maxCount} of last {recentCheckIns.length} days ({dominantMoodObj?.description || 'Calm and steady'}).
+            Recorded in {maxCount} of last {recentCheckIns.length} logs ({dominantMoodObj?.description || 'Calm and steady'}).
           </p>
         </div>
 
@@ -392,7 +474,7 @@ export default function Dashboard({
             {avgStress === 'N/A'
               ? 'No check-in entries yet'
               : Number(avgStress) > 3.5
-                ? 'Elevated pressure — pace your study intervals'
+                ? 'Elevated academic pressure — pace your study blocks'
                 : 'Balanced academic workload'}
           </p>
         </div>
@@ -411,7 +493,7 @@ export default function Dashboard({
             {avgEnergy === 'N/A'
               ? 'No check-in entries yet'
               : Number(avgEnergy) < 2.5
-                ? 'Low physical stamina — prioritize sleep'
+                ? 'Lower physical stamina — protect your sleep hours'
                 : 'Steady daily stamina levels'}
           </p>
         </div>
@@ -426,11 +508,11 @@ export default function Dashboard({
             {checkIns.length}
           </div>
           <p className="bento-stat-desc">
-            {checkIns.filter((c) => c.isSynthetic).length} synthetic demo records included for trend baseline.
+            {checkIns.filter((c) => c.isSynthetic).length} synthetic demo entries included as initial baseline.
           </p>
         </div>
 
-        {/* Bento 7: Quick Access to AI Companion (2-columns) ⭐ AI Companion Quick Access */}
+        {/* Bento 7: Quick Access to AI Companion (2-columns) ⭐ AI Companion Haven */}
         <div className="bento-card bento-card-span-2 gsap-bento-card bento-ai-quick-card">
           <div className="bento-card-header">
             <div className="bento-card-title-group">
@@ -440,7 +522,7 @@ export default function Dashboard({
             <span className="bento-badge badge-emerald">Gemma MoE • {isLocalBackend ? 'Port 5002' : 'Active'}</span>
           </div>
           <p className="bento-card-desc">
-            Feeling overwhelmed by exams, mess routines, or hostel friction? Talk it through with our private empathetic listener in browser RAM.
+            Feeling overwhelmed by syllabus coverage, mess food, or roommate friction? Unpack your thoughts with our private empathetic listener in RAM.
           </p>
           <div className="bento-ai-prompt-shortcuts">
             <button
@@ -455,11 +537,11 @@ export default function Dashboard({
               className="ai-shortcut-pill"
               onClick={() => setActiveTab('chat')}
             >
-              "Managing study pressure tonight"
+              "Managing study fatigue tonight"
             </button>
           </div>
           <div className="bento-card-footer">
-            <span className="bento-footer-note">Microphone voice input & audio reply ready</span>
+            <span className="bento-footer-note">Microphone voice input & audio playback ready</span>
             <button
               type="button"
               className="bento-footer-link"
@@ -480,7 +562,7 @@ export default function Dashboard({
             </div>
             <button
               type="button"
-              className="btn-cinematic-icon"
+              className={`btn-cinematic-icon ${isFlippingPrompt ? 'is-spinning' : ''}`}
               onClick={handleNextPrompt}
               aria-label="Load next reflection prompt"
               title="Next reflection thought"
@@ -491,7 +573,7 @@ export default function Dashboard({
           <div className="bento-category-tag">
             {currentPrompt.category}
           </div>
-          <blockquote className="bento-quote-text">
+          <blockquote className={`bento-quote-text ${isFlippingPrompt ? 'is-fading' : ''}`}>
             "{currentPrompt.prompt}"
           </blockquote>
           <div className="bento-card-footer">
@@ -517,7 +599,7 @@ export default function Dashboard({
             <span className="bento-badge badge-neutral">24/7 Toll-Free</span>
           </div>
           <p className="bento-card-desc">
-            If hostel pressure, loneliness, or academic anxiety feels overwhelming, verified support is available anytime across India.
+            If hostel pressure, loneliness, or acute panic feels overwhelming, free verified support is available anytime across India.
           </p>
           <div className="bento-emergency-contact">
             <div className="emergency-name">Govt. Tele-MANAS Helpline</div>

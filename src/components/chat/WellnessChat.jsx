@@ -882,6 +882,9 @@ export default function WellnessChat({ setActiveTab }) {
                     >
                       {playingMessageId === msg.id ? (
                         <>
+                          <span className="tts-wave-anim" aria-hidden="true">
+                            <span /><span /><span /><span />
+                          </span>
                           <Square size={11} aria-hidden="true" />
                           <span>Stop</span>
                         </>

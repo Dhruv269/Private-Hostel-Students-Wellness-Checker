@@ -46,10 +46,11 @@ function getValidScaleValue(value) {
 }
 
 /**
- * Reusable Cinematic Trend Bar Chart
+ * Reusable Cinematic Trend Bar Chart with interactive hover states
  */
 function TrendBarChart({ title, icon, description, data, property, barColorClass }) {
   const isStress = property === 'stress';
+  const [activeDayIdx, setActiveDayIdx] = useState(null);
 
   return (
     <div className="cinematic-card trend-chart-card">
@@ -79,9 +80,18 @@ function TrendBarChart({ title, icon, description, data, property, barColorClass
               const heightPercent = value === null ? 0 : (value / 5) * 100;
               const dayName = getValidDate(item.date) ? getShortDayName(item.date) : 'Day';
               const isHighStress = isStress && value !== null && value >= 4;
+              const isInspected = activeDayIdx === index;
 
               return (
-                <div key={item.id || `${item.date || 'entry'}-${property}-${index}`} className="trend-column">
+                <button
+                  key={item.id || `${item.date || 'entry'}-${property}-${index}`} 
+                  type="button"
+                  className={`trend-column ${isInspected ? 'is-column-hovered' : ''}`}
+                  onClick={() => setActiveDayIdx(isInspected ? null : index)}
+                  onMouseEnter={() => setActiveDayIdx(index)}
+                  onMouseLeave={() => setActiveDayIdx(null)}
+                  aria-label={`${dayName}: ${property} ${value ?? 'unrecorded'}/5`}
+                >
                   <span className={`trend-value-label ${isHighStress ? 'trend-value-stress' : ''}`}>
                     {value ?? '—'}
                   </span>
@@ -89,16 +99,29 @@ function TrendBarChart({ title, icon, description, data, property, barColorClass
                   <div className="trend-bar-track">
                     <div 
                       className={`trend-bar-fill ${barColorClass}`} 
-                      style={{ height: `${heightPercent}%` }}
-                      title={`${dayName}: ${property} ${value === null ? 'not recorded' : `${value}/5`}`}
+                      style={{ height: `${heightPercent}%` }} 
                     />
                   </div>
 
                   <span className="trend-day-label">{dayName}</span>
-                </div>
+                </button>
               );
             })}
           </div>
+
+          {activeDayIdx !== null && data[activeDayIdx] && (
+            <div className="trend-day-tooltip" role="status">
+              <span>{getShortDayName(data[activeDayIdx].date)}</span>
+              <span className="tooltip-divider">•</span>
+              <span>{property === 'stress' ? 'Stress Level' : 'Stamina'}: <strong>{data[activeDayIdx][property]}/5</strong></span>
+              {data[activeDayIdx].note && (
+                <>
+                  <span className="tooltip-divider">•</span>
+                  <span className="tooltip-note">"{data[activeDayIdx].note.slice(0, 45)}..."</span>
+                </>
+              )}
+            </div>
+          )}
 
           <div className="trend-axis-labels">
             <span>{data.length > 1 ? '7 Days Ago' : 'Current'}</span>
@@ -134,6 +157,22 @@ export default function HistoryView({ checkIns, setActiveTab }) {
       return dateA - dateB;
     })
     .slice(-7);
+
+  // Compute 7-day metrics
+  let stressSum = 0;
+  let energySum = 0;
+  let countWithScales = 0;
+  for (const item of last7Days) {
+    const s = getValidScaleValue(item.stress);
+    const e = getValidScaleValue(item.energy);
+    if (s !== null && e !== null) {
+      stressSum += s;
+      energySum += e;
+      countWithScales++;
+    }
+  }
+  const avgStress7d = countWithScales > 0 ? (stressSum / countWithScales).toFixed(1) : '—';
+  const avgEnergy7d = countWithScales > 0 ? (energySum / countWithScales).toFixed(1) : '—';
 
   const moodCounts = {};
   for (const checkIn of entries) {
@@ -184,6 +223,26 @@ export default function HistoryView({ checkIns, setActiveTab }) {
           </button>
         </div>
       </header>
+
+      {/* Quick Summary Metrics Strip */}
+      <div className="history-metrics-strip">
+        <div className="history-metric-box">
+          <span className="metric-box-label">7-Day Avg Stress</span>
+          <span className="metric-box-val val-stress">{avgStress7d} / 5</span>
+        </div>
+        <div className="history-metric-box">
+          <span className="metric-box-label">7-Day Avg Stamina</span>
+          <span className="metric-box-val val-energy">{avgEnergy7d} / 5</span>
+        </div>
+        <div className="history-metric-box">
+          <span className="metric-box-label">Recorded Entries</span>
+          <span className="metric-box-val">{entries.length}</span>
+        </div>
+        <div className="history-metric-box">
+          <span className="metric-box-label">Storage Model</span>
+          <span className="metric-box-val metric-box-val-ram">Session RAM Only</span>
+        </div>
+      </div>
 
       {!hasActualCheckIns && (
         <div className="cinematic-card history-empty-banner">
@@ -330,7 +389,7 @@ export default function HistoryView({ checkIns, setActiveTab }) {
                     {energy !== null && (
                       <span className="timeline-rating-chip">
                         <BatteryMedium size={14} className="text-emerald-400" aria-hidden="true" />
-                        <span>Energy: <strong>{energy} / 5</strong></span>
+                        <span>Stamina: <strong>{energy} / 5</strong></span>
                       </span>
                     )}
                   </div>

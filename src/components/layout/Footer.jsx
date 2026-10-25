@@ -1,9 +1,15 @@
 import React from 'react';
-import { Shield, PhoneCall, Sun, Moon, Sparkles } from 'lucide-react';
+import { Shield, PhoneCall, Sun, Moon, Sparkles, Wind } from 'lucide-react';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
-export default function Footer({ setActiveTab, theme = 'dark', toggleTheme }) {
+export default function Footer({ 
+  setActiveTab, 
+  theme = 'dark', 
+  toggleTheme,
+  calmMode = false,
+  toggleCalmMode
+}) {
   return (
     <footer className="footer-cinematic" role="contentinfo">
       <div className="footer-cinematic-inner">
@@ -137,6 +143,20 @@ export default function Footer({ setActiveTab, theme = 'dark', toggleTheme }) {
           </p>
 
           <div className="footer-bottom-actions">
+            {/* Calm Mode Quick Toggle */}
+            {toggleCalmMode && (
+              <button
+                type="button"
+                className={`footer-action-btn ${calmMode ? 'is-calm-active' : ''}`}
+                onClick={toggleCalmMode}
+                aria-label={calmMode ? "Disable Calm Mode" : "Enable Calm Mode"}
+                aria-pressed={calmMode}
+              >
+                <Wind size={13} aria-hidden="true" />
+                <span>{calmMode ? 'Calm Mode: On' : 'Calm Mode: Off'}</span>
+              </button>
+            )}
+
             <button
               type="button"
               className="footer-theme-toggle"

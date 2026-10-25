@@ -11,21 +11,29 @@ import {
   Moon,
   Menu,
   X,
-  Sparkles
+  Sparkles,
+  Wind
 } from 'lucide-react';
 
 /**
  * Navbar - Floating Oval Glassmorphism Navigation Bar
  * 
- * Features:
- * - Horizontally centered, floating pill/oval container with backdrop-filter blur
- * - High-end translucent dark glass with subtle emerald highlights
- * - Fits brand, all 7 navigation links, and theme toggle in a single row on desktop
- * - Clear active state with soft emerald pill indicator
- * - Sleek mobile menu toggle opening a floating dark glass modal
- * - Removed obsolete top prototype banner while keeping all destinations accessible
+ * Midnight Sanctuary Edition:
+ * - Horizontally centered, floating translucent glass pill container
+ * - Deep velvet backdrop blur with subtle celestial edge glow
+ * - Tactile active route indicator
+ * - Accessible Calm Mode & Theme toggles
+ * - Floating dark glass mobile menu drawer
  */
-export default function Navbar({ activeTab, setActiveTab, hasCheckedInToday, theme = 'dark', toggleTheme }) {
+export default function Navbar({ 
+  activeTab, 
+  setActiveTab, 
+  hasCheckedInToday, 
+  theme = 'dark', 
+  toggleTheme,
+  calmMode = false,
+  toggleCalmMode
+}) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
@@ -54,7 +62,7 @@ export default function Navbar({ activeTab, setActiveTab, hasCheckedInToday, the
           aria-label="HostelWell - Home"
         >
           <div className="navbar-brand-emblem" aria-hidden="true">
-            <Sparkles size={16} />
+            <Sparkles size={15} />
           </div>
           <span className="navbar-brand-text">HostelWell</span>
         </a>
@@ -86,8 +94,21 @@ export default function Navbar({ activeTab, setActiveTab, hasCheckedInToday, the
           </ul>
         </nav>
 
-        {/* Right Actions: Theme Toggle & Mobile Menu Trigger */}
+        {/* Right Actions: Calm Mode Toggle, Theme Toggle & Mobile Menu Trigger */}
         <div className="navbar-actions">
+          {/* User-Controlled Calm Mode Toggle */}
+          <button
+            type="button"
+            className={`navbar-calm-btn ${calmMode ? 'is-calm-active' : ''}`}
+            onClick={toggleCalmMode}
+            aria-label={calmMode ? "Disable Calm Mode (return to full ambient motion)" : "Enable Calm Mode (softer glow, reduced motion)"}
+            title={calmMode ? "Calm Mode: Active (click to return to dynamic motion)" : "Calm Mode: Softer glow & still motion"}
+            aria-pressed={calmMode}
+          >
+            <Wind size={14} aria-hidden="true" />
+            <span className="navbar-calm-text">Calm</span>
+          </button>
+
           {/* Theme Toggle Button */}
           <button
             type="button"
@@ -150,6 +171,29 @@ export default function Navbar({ activeTab, setActiveTab, hasCheckedInToday, the
                 );
               })}
             </ul>
+
+            {/* Mobile Controls for Calm Mode & Theme */}
+            <div className="navbar-mobile-actions">
+              <button
+                type="button"
+                className={`navbar-mobile-control-btn ${calmMode ? 'is-calm-active' : ''}`}
+                onClick={toggleCalmMode}
+                aria-pressed={calmMode}
+              >
+                <Wind size={15} aria-hidden="true" />
+                <span>{calmMode ? 'Calm Mode: On' : 'Calm Mode: Off'}</span>
+              </button>
+
+              <button
+                type="button"
+                className="navbar-mobile-control-btn"
+                onClick={toggleTheme}
+                aria-label="Toggle theme"
+              >
+                {theme === 'dark' ? <Sun size={15} aria-hidden="true" /> : <Moon size={15} aria-hidden="true" />}
+                <span>{theme === 'dark' ? 'Light Theme' : 'Dark Theme'}</span>
+              </button>
+            </div>
           </nav>
         </div>
       )}

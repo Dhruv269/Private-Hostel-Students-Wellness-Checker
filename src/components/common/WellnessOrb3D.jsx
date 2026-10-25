@@ -26,9 +26,14 @@ function checkWebGLCapability() {
   }
 }
 
-export default function WellnessOrb3D({ className = '' }) {
+export default function WellnessOrb3D({ className = '', calmMode = false }) {
   const mountRef = useRef(null);
   const [webGLSupported] = useState(checkWebGLCapability);
+  const calmModeRef = useRef(calmMode);
+
+  useEffect(() => {
+    calmModeRef.current = calmMode;
+  }, [calmMode]);
 
   useEffect(() => {
     const container = mountRef.current;
@@ -68,14 +73,14 @@ export default function WellnessOrb3D({ className = '' }) {
     const sphereGeo = new THREE.IcosahedronGeometry(1.15, 4);
     const sphereMat = new THREE.MeshPhysicalMaterial({
       color: 0x00c2ff,
-      emissive: 0x081e42,
-      emissiveIntensity: 0.8,
-      roughness: 0.18,
-      metalness: 0.22,
+      emissive: 0x071b3b,
+      emissiveIntensity: 0.85,
+      roughness: 0.14,
+      metalness: 0.20,
       clearcoat: 1.0,
-      clearcoatRoughness: 0.12,
+      clearcoatRoughness: 0.10,
       transparent: true,
-      opacity: 0.90
+      opacity: 0.92
     });
     const coreSphere = new THREE.Mesh(sphereGeo, sphereMat);
     visualGroup.add(coreSphere);
@@ -86,16 +91,16 @@ export default function WellnessOrb3D({ className = '' }) {
       color: 0x1677ff,
       wireframe: true,
       transparent: true,
-      opacity: 0.38
+      opacity: 0.35
     });
     const wireCage = new THREE.Mesh(wireGeo, wireMat);
     visualGroup.add(wireCage);
 
     // Primary Gyroscopic Orbital Ring (Bright Cyan Harmony Ring)
-    const ringGeo1 = new THREE.TorusGeometry(1.9, 0.04, 16, 120);
+    const ringGeo1 = new THREE.TorusGeometry(1.9, 0.038, 16, 120);
     const ringMat1 = new THREE.MeshStandardMaterial({
       color: 0x00c2ff,
-      emissive: 0x063060,
+      emissive: 0x052850,
       roughness: 0.22,
       metalness: 0.82
     });
@@ -120,12 +125,12 @@ export default function WellnessOrb3D({ className = '' }) {
     visualGroup.add(orbitalRing2);
 
     // Floating Orbital Particle Constellation
-    const particleCount = 48;
+    const particleCount = 52;
     const particlePositions = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount; i++) {
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos((Math.random() * 2) - 1);
-      const radius = 1.7 + Math.random() * 0.7;
+      const radius = 1.65 + Math.random() * 0.75;
 
       particlePositions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
       particlePositions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
@@ -134,30 +139,30 @@ export default function WellnessOrb3D({ className = '' }) {
     const particleGeo = new THREE.BufferGeometry();
     particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
     const particleMat = new THREE.PointsMaterial({
-      color: 0x00c2ff,
-      size: 0.045,
+      color: 0x38bdf8,
+      size: 0.042,
       transparent: true,
-      opacity: 0.65,
+      opacity: 0.70,
       blending: THREE.AdditiveBlending
     });
     const particleCloud = new THREE.Points(particleGeo, particleMat);
     visualGroup.add(particleCloud);
 
     // 3. Cinematic Atmospheric Lighting
-    const ambientLight = new THREE.AmbientLight(0x080b12, 1.5);
+    const ambientLight = new THREE.AmbientLight(0x070c18, 1.8);
     scene.add(ambientLight);
 
     const electricBlueLight = new THREE.PointLight(0x1677ff, 4.5, 14);
     electricBlueLight.position.set(3.5, 3.5, 4.0);
     scene.add(electricBlueLight);
 
-    const cyanLight = new THREE.PointLight(0x00c2ff, 3.8, 12);
+    const cyanLight = new THREE.PointLight(0x00c2ff, 4.0, 12);
     cyanLight.position.set(-3.5, -2.5, -2.0);
     scene.add(cyanLight);
 
-    const softBlueFill = new THREE.PointLight(0x60a5fa, 1.8, 10);
-    softBlueFill.position.set(0.0, -3.0, 3.0);
-    scene.add(softBlueFill);
+    const periwinkleRim = new THREE.PointLight(0x818cf8, 2.2, 10);
+    periwinkleRim.position.set(0.0, -3.2, 3.2);
+    scene.add(periwinkleRim);
 
     // 4. Motion Preferences, Mouse Parallax & Intersection Observer
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -168,7 +173,11 @@ export default function WellnessOrb3D({ className = '' }) {
     let targetRotY = 0;
 
     const handlePointerMove = (e) => {
-      if (prefersReducedMotion) return;
+      if (prefersReducedMotion || calmModeRef.current) {
+        targetRotX = 0;
+        targetRotY = 0;
+        return;
+      }
       const rect = container.getBoundingClientRect();
       const clientX = e.clientX;
       const clientY = e.clientY;
@@ -181,8 +190,8 @@ export default function WellnessOrb3D({ className = '' }) {
       ) {
         const x = (clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
         const y = (clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
-        targetRotY = x * 0.45;
-        targetRotX = -y * 0.35;
+        targetRotY = x * 0.40;
+        targetRotX = -y * 0.30;
       } else {
         targetRotX = 0;
         targetRotY = 0;
@@ -199,30 +208,35 @@ export default function WellnessOrb3D({ className = '' }) {
 
     const animate = () => {
       if (isVisible && !prefersReducedMotion) {
-        clockTime += 0.015;
+        const isCalm = calmModeRef.current;
+        const speedFactor = isCalm ? 0.25 : 1.0;
+        clockTime += 0.015 * speedFactor;
 
         // Smooth breathing rotation
-        coreSphere.rotation.y += 0.0035;
-        coreSphere.rotation.x += 0.0018;
+        coreSphere.rotation.y += 0.0035 * speedFactor;
+        coreSphere.rotation.x += 0.0018 * speedFactor;
 
-        wireCage.rotation.y -= 0.0022;
-        wireCage.rotation.z += 0.0015;
+        wireCage.rotation.y -= 0.0022 * speedFactor;
+        wireCage.rotation.z += 0.0015 * speedFactor;
 
-        orbitalRing1.rotation.z += 0.0042;
-        orbitalRing1.rotation.x += 0.0012;
+        orbitalRing1.rotation.z += 0.0042 * speedFactor;
+        orbitalRing1.rotation.x += 0.0012 * speedFactor;
 
-        orbitalRing2.rotation.z -= 0.0034;
-        orbitalRing2.rotation.y += 0.0018;
+        orbitalRing2.rotation.z -= 0.0034 * speedFactor;
+        orbitalRing2.rotation.y += 0.0018 * speedFactor;
 
-        particleCloud.rotation.y += 0.0015;
+        particleCloud.rotation.y += 0.0015 * speedFactor;
 
-        // Subtle organic breathing scale
-        const breath = 1.0 + Math.sin(clockTime * 0.8) * 0.025;
+        // Subtle organic breathing scale (calm mode uses minimal resting pulse)
+        const breathAmplitude = isCalm ? 0.012 : 0.026;
+        const breath = 1.0 + Math.sin(clockTime * 0.7) * breathAmplitude;
         coreSphere.scale.set(breath, breath, breath);
 
-        // Smooth pointer tracking interpolation
-        visualGroup.rotation.y += (targetRotY - visualGroup.rotation.y) * 0.06;
-        visualGroup.rotation.x += (targetRotX - visualGroup.rotation.x) * 0.06;
+        // Smooth pointer tracking interpolation (zeros out smoothly in calm mode)
+        const currentTargetY = isCalm ? 0 : targetRotY;
+        const currentTargetX = isCalm ? 0 : targetRotX;
+        visualGroup.rotation.y += (currentTargetY - visualGroup.rotation.y) * 0.05;
+        visualGroup.rotation.x += (currentTargetX - visualGroup.rotation.x) * 0.05;
 
         renderFrame();
       }

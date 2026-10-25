@@ -9,7 +9,9 @@ import {
   Smile,
   Meh,
   CloudRain,
-  Flame
+  Flame,
+  Lightbulb,
+  Heart
 } from 'lucide-react';
 import gsap from 'gsap';
 import { MOOD_DEFINITIONS, STRESS_LEVELS, ENERGY_LEVELS, getMoodById } from '../../data/mockData';
@@ -24,6 +26,55 @@ const MOOD_ICONS = {
   overwhelmed: Flame
 };
 
+const NOTE_INSPIRATIONS = [
+  "Felt groggy in morning lecture, but a short walk around the campus green cleared my head...",
+  "Hostel corridor felt noisy, but putting on headphones helped me finish my tutorial sheet...",
+  "Had warm chai with my roommate and talked through our exam anxieties...",
+  "Missing home and home-cooked food today, but taking it one evening at a time..."
+];
+
+/**
+ * Calculates a dynamic equilibrium insight comparing current stress and stamina.
+ */
+function getEquilibriumInsight(stressVal, energyVal) {
+  const s = Number(stressVal);
+  const e = Number(energyVal);
+
+  if (s >= 4 && e <= 2) {
+    return {
+      status: 'High Load • Low Stamina',
+      desc: 'Heavy academic or living stress with drained reserves. Prioritize resting, hydration, and stepping away from screens tonight.',
+      toneClass: 'balance-tone-warning'
+    };
+  }
+  if (s >= 4 && e >= 4) {
+    return {
+      status: 'High Intensity • Active Energy',
+      desc: 'You have drive, but watch out for sudden burnout. Schedule short recovery intervals between study blocks.',
+      toneClass: 'balance-tone-alert'
+    };
+  }
+  if (s <= 2 && e >= 4) {
+    return {
+      status: 'In The Zone • Rested & Grounded',
+      desc: 'Optimal equilibrium. A great mental space to tackle complex assignments or unwind with friends.',
+      toneClass: 'balance-tone-thriving'
+    };
+  }
+  if (s <= 2 && e <= 2) {
+    return {
+      status: 'Low Stress • Gentle Rest Mode',
+      desc: 'You might feel drowsy or physically sluggish. A brief nap or light walk can restore physical stamina.',
+      toneClass: 'balance-tone-gentle'
+    };
+  }
+  return {
+    status: 'Steady Equilibrium',
+    desc: 'Workload and physical stamina are reasonably balanced today. Keep pacing yourself smoothly.',
+    toneClass: 'balance-tone-balanced'
+  };
+}
+
 export default function DailyCheckIn({ 
   todayCheckIn, 
   onSaveCheckIn, 
@@ -36,6 +87,7 @@ export default function DailyCheckIn({
 
   const [error, setError] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [inspirationIndex, setInspirationIndex] = useState(0);
 
   const successRef = useRef(null);
   const formRef = useRef(null);
@@ -46,9 +98,9 @@ export default function DailyCheckIn({
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       gsap.from(successRef.current, {
         opacity: 0,
-        y: 24,
-        scale: 0.96,
-        duration: 0.7,
+        y: 20,
+        scale: 0.97,
+        duration: 0.6,
         ease: 'power3.out'
       });
     }
@@ -85,8 +137,16 @@ export default function DailyCheckIn({
     setIsSubmitted(false);
   };
 
+  const handleInsertInspiration = () => {
+    const nextText = NOTE_INSPIRATIONS[inspirationIndex % NOTE_INSPIRATIONS.length];
+    setNote(nextText);
+    setInspirationIndex((prev) => prev + 1);
+  };
+
+  const equilibriumInsight = getEquilibriumInsight(stress, energy);
+
   // ==========================================================================
-  // VIEW A: Success Confirmation State (GSAP Animated)
+  // VIEW A: Success Confirmation State (Midnight Sanctuary Acknowledgement)
   // ==========================================================================
   if (isSubmitted) {
     const selectedMoodObj = getMoodById(mood);
@@ -96,17 +156,18 @@ export default function DailyCheckIn({
       <div className="checkin-container-focused">
         <div className="cinematic-card checkin-success-modal" ref={successRef}>
           <div className="success-emblem-wrapper">
-            <CheckCircle2 size={36} className="text-emerald-400" aria-hidden="true" />
+            <div className="success-emblem-halo" aria-hidden="true" />
+            <CheckCircle2 size={38} className="text-emerald-400" aria-hidden="true" />
           </div>
 
           <div className="success-badge-row">
             <span className="badge-emerald-subtle">
-              Check-In Recorded (Current Session)
+              Check-In Preserved in Session RAM
             </span>
           </div>
 
           <h1 className="success-modal-title">
-            Your daily check-in is logged.
+            Your sanctuary log is recorded.
           </h1>
           <p className="success-modal-desc">
             Noticing your mental state is a powerful practice amidst the pace of hostel life. Your log is preserved in browser memory.
@@ -118,24 +179,33 @@ export default function DailyCheckIn({
                 <MoodIcon size={22} className="text-emerald-400" aria-hidden="true" />
               </div>
               <div className="success-mood-meta">
-                <span className="success-mood-label">Mood: {selectedMoodObj?.label}</span>
+                <span className="success-mood-label">State of Mind: {selectedMoodObj?.label}</span>
                 <span className="success-mood-desc">{selectedMoodObj?.description}</span>
               </div>
             </div>
 
             <div className="success-scales-row">
               <div className="success-scale-chip">
-                <span className="scale-chip-label">Stress</span>
+                <span className="scale-chip-label">Stress Level</span>
                 <span className={`scale-chip-val ${stress >= 4 ? 'val-stress-high' : 'val-stress-normal'}`}>
                   {stress} / 5
                 </span>
               </div>
               <div className="success-scale-chip">
-                <span className="scale-chip-label">Energy</span>
+                <span className="scale-chip-label">Stamina Level</span>
                 <span className="scale-chip-val val-energy">
                   {energy} / 5
                 </span>
               </div>
+            </div>
+
+            {/* Equilibrium Summary */}
+            <div className={`success-equilibrium-box ${equilibriumInsight.toneClass}`}>
+              <div className="equilibrium-title-row">
+                <Heart size={14} aria-hidden="true" />
+                <strong>{equilibriumInsight.status}</strong>
+              </div>
+              <p className="equilibrium-desc">{equilibriumInsight.desc}</p>
             </div>
 
             {note.trim() && (
@@ -177,7 +247,7 @@ export default function DailyCheckIn({
   }
 
   // ==========================================================================
-  // VIEW B: The Check-In Input Form
+  // VIEW B: Tactile Sanctuary Input Form
   // ==========================================================================
   return (
     <div className="checkin-container-focused" ref={formRef}>
@@ -202,7 +272,7 @@ export default function DailyCheckIn({
       )}
 
       <form onSubmit={handleSubmit} noValidate className="checkin-form-stack">
-        {/* Field 1: Overall Mood Selection */}
+        {/* Field 1: Overall Mood Selection (Tactile Frosted Stones) */}
         <fieldset className="cinematic-card form-section-card">
           <legend className="form-section-legend">
             1. State of Mind <span className="legend-required">*</span>
@@ -221,7 +291,7 @@ export default function DailyCheckIn({
                   type="button"
                   role="radio"
                   aria-checked={isSelected}
-                  className={`mood-tile-btn ${isSelected ? 'is-selected' : ''}`}
+                  className={`mood-tile-btn mood-tile-${item.id} ${isSelected ? 'is-selected' : ''}`}
                   onClick={() => setMood(item.id)}
                 >
                   <div className="mood-tile-icon-box">
@@ -241,7 +311,7 @@ export default function DailyCheckIn({
             2. Academic & Living Stress (1 to 5)
           </legend>
           <p className="form-section-hint">
-            Exams, assignment pressure, hostel environment, or roommate friction.
+            Exam prep, syllabus deadlines, hostel room environment, or roommate friction.
           </p>
 
           <div className="scale-control-wrapper">
@@ -278,7 +348,7 @@ export default function DailyCheckIn({
             3. Physical & Mental Stamina (1 to 5)
           </legend>
           <p className="form-section-hint">
-            Rest quality, physical energy, and capacity to focus throughout the day.
+            Sleep quality, physical battery, and your capacity to focus throughout lectures.
           </p>
 
           <div className="scale-control-wrapper">
@@ -306,15 +376,33 @@ export default function DailyCheckIn({
               <span>5: Fully Charged</span>
             </div>
           </div>
+
+          {/* Live Dynamic Equilibrium Feedback */}
+          <div className={`checkin-live-equilibrium ${equilibriumInsight.toneClass}`}>
+            <span className="equilibrium-pill-label">Equilibrium Preview:</span>
+            <span className="equilibrium-pill-status">{equilibriumInsight.status}</span>
+            <p className="equilibrium-pill-desc">{equilibriumInsight.desc}</p>
+          </div>
         </fieldset>
 
-        {/* Field 4: Optional Personal Note */}
+        {/* Field 4: Optional Personal Note with Suggestion Tool */}
         <div className="cinematic-card form-section-card">
-          <label htmlFor="checkin-note-input" className="form-section-legend">
-            4. Personal Reflection Note <span className="legend-optional">(Optional)</span>
-          </label>
+          <div className="note-section-header">
+            <label htmlFor="checkin-note-input" className="form-section-legend">
+              4. Personal Reflection Note <span className="legend-optional">(Optional)</span>
+            </label>
+            <button
+              type="button"
+              className="note-inspiration-btn"
+              onClick={handleInsertInspiration}
+              title="Insert a gentle reflection prompt"
+            >
+              <Lightbulb size={13} aria-hidden="true" />
+              <span>Need prompt?</span>
+            </button>
+          </div>
           <p className="form-section-hint">
-            Jot down a fleeting thought: a lab that went well, a conversation, or something you are grateful for.
+            Jot down a fleeting thought: a lab experiment, conversation with a roommate, or something you weathered today.
           </p>
 
           <textarea
