@@ -1,237 +1,271 @@
-# HostelWell 🏡🌱
-**A Privacy-Conscious Wellness Check-In & AI Reflection Companion for Hostel Students**
+# HostelWell — Find Your Balance 🏡🌱
 
-HostelWell is a web application designed specifically for college students living in shared and private hostels. Living away from home presents unique day-to-day challenges—academic deadlines, roommate dynamics, erratic sleep patterns, mess food fatigue, and homesickness. HostelWell provides an approachable, private space for daily wellness check-ins, visual trend tracking, guided reflection prompts, verified emergency resources, and an AI reflection companion powered by Google's hosted **Gemma** open models.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![React](https://img.shields.io/badge/React-19.3.1-61dafb.svg?logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-8.3.4-646cff.svg?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D18.0.0-339933.svg?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-4.21.2-000000.svg?logo=express&logoColor=white)](https://expressjs.com/)
+[![Model](https://img.shields.io/badge/Model-Gemma--4--26B-4285F4.svg?logo=google&logoColor=white)](https://ai.google.dev/)
 
----
-
-## 📋 Table of Contents
-- [✨ Current Features](#-current-features)
-- [🛠️ Technology Stack](#️-technology-stack)
-- [🏗️ System Architecture & Folder Structure](#️-system-architecture--folder-structure)
-- [💾 Data Storage, Privacy & Boundaries](#-data-storage-privacy--boundaries)
-- [⚙️ Prerequisites](#️-prerequisites)
-- [📦 Installation & Setup](#-installation--setup)
-- [🔐 Environment Configuration](#-environment-configuration)
-- [🚀 Running the Application](#-running-the-application)
-- [🤖 Gemma Model Integration](#-gemma-model-integration)
-- [🎙️ Voice & Speech Capabilities](#️-voice--speech-capabilities)
-- [📡 Backend API Reference](#-backend-api-reference)
-  - [1. Health Check (`GET /api/health`)](#1-health-check-get-apihealth)
-  - [2. Wellness Chat (`POST /api/chat`)](#2-wellness-chat-post-apichat)
-- [🔒 Security, CORS & Rate Limiting](#-security-cors--rate-limiting)
-- [🛡️ Safety Boundaries & Crisis Screening](#️-safety-boundaries--crisis-screening)
-- [🔧 Troubleshooting](#-troubleshooting)
-- [🧑‍💻 Development & Quality Commands](#-development--quality-commands)
-- [📄 License](#-license)
+> **A privacy-conscious daily wellness reflection platform and AI companion engineered for college students navigating shared and private hostel living.**
 
 ---
 
-## ✨ Current Features
+## 📌 Project Deployment
 
-### 1. Daily Student Wellness Check-In
-- **Multi-Factor Ratings:** Log daily mood (5 options: *Great*, *Good*, *Okay*, *Low*, *Overwhelmed*), academic/life stress (1–5 scale: *Very Low* to *Extreme*), and physical/mental energy (1–5 scale: *Exhausted* to *High*).
-- **Personal Notes:** Add an optional reflection note (up to 500 characters) about the day's experiences.
-- **Dynamic Date Tracking:** Check-in dates evaluate dynamically against your local calendar day, updating status if kept open past midnight.
+* **Frontend Application:** [https://private-hostel-students-wellness-checker-8y0ejsid3.vercel.app](https://private-hostel-students-wellness-checker-8y0ejsid3.vercel.app)
+* **Backend Health Endpoint:** [https://hostelwell-backend.onrender.com/api/health](https://hostelwell-backend.onrender.com/api/health)
 
-### 2. Wellness Dashboard
-- **Daily Status Overview:** Immediately see whether today's check-in has been completed or is still pending.
-- **Key Metrics & Rolling Averages:** Displays today's mood, stress, and energy alongside calculated 7-day rolling averages and check-in streak.
-- **Quick-Access Action Buttons:** Direct shortcuts to start a check-in, review reflection prompts, or talk with the AI Companion.
+> *Deployment Note:* The backend service is hosted on Render's free tier. If the instance has been inactive, the initial request may experience a cold-start delay (~30–50 seconds) while the container spins up.
 
-### 3. History & Trend Analysis
-- **Stress & Energy Variations:** Visual comparative bars tracking daily stress vs. energy levels.
-- **Mood Distribution:** Breakdown of logged moods across recorded check-ins.
-- **Chronological Timeline:** Detailed log entries clearly indicating what was recorded each day.
-- **Synthetic Demo Data Identification:** Initial history is pre-seeded with 6 synthetic demo records (`isSynthetic: true`). The UI visibly badges these as **"Demo Record"** to distinguish them from check-ins you log during your active session.
+---
+
+## 📖 Table of Contents
+
+- [Overview](#-overview)
+- [Problem Statement](#-problem-statement)
+- [Key Features](#-key-features)
+- [Visual Design & Aesthetics](#-visual-design--aesthetics)
+- [Technology Stack](#-technology-stack)
+- [Application Architecture](#-application-architecture)
+- [Authentication & Security Status](#-authentication--security-status)
+- [Privacy & Data Handling Model](#-privacy--data-handling-model)
+- [Prerequisites](#-prerequisites)
+- [Installation & Local Setup](#-installation--local-setup)
+- [Environment Configuration](#-environment-configuration)
+- [Running the Application](#-running-the-application)
+- [API Reference](#-api-reference)
+  - [`GET /api/health`](#1-health-check-get-apihealth)
+  - [`POST /api/chat`](#2-wellness-chat-post-apichat)
+- [Deployment Guide](#-deployment-guide)
+  - [Frontend (Vercel)](#frontend-deployment-vercel)
+  - [Backend (Render)](#backend-deployment-render)
+- [Repository Structure](#-repository-structure)
+- [Known Limitations](#-known-limitations)
+- [Roadmap & Future Enhancements](#-roadmap--future-enhancements)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+---
+
+## 🌿 Overview
+
+Living in a college hostel away from family is a transformative experience, but it introduces distinct physical and emotional stressors: noisy corridors, shared washrooms, academic pressure, homesickness, erratic sleep cycles, and mess food fatigue.
+
+**HostelWell** is an approachable, zero-barrier wellness reflection application built specifically for this student lifestyle. It gives students a private space to log daily check-ins, observe rolling stress and energy trends, explore guided journaling prompts, access verified 24/7 crisis helplines, and converse with an empathetic, non-clinical AI reflection companion powered by Google's hosted **Gemma 4** open model.
+
+---
+
+## 🎯 Problem Statement
+
+Traditional mental health and habit-tracking apps often fail hostel students due to three friction points:
+
+1. **Intrusive Data Demands:** Requiring mandatory account creation, email sign-ups, and long onboarding questionnaires deters students who fear their emotional state could be exposed to peers or administrators.
+2. **Clinical & Disconnected Tone:** Many tools pathologize normal transitional friction with clinical psychiatric terminology or dismiss genuine struggles with toxic positivity.
+3. **Lack of Hostel Context:** Generic wellness apps do not account for the realities of shared dormitory life—such as midnight roommate conflicts, exam preparation weeks, communal dining, or curfew constraints.
+
+HostelWell resolves this by operating with an **in-memory, privacy-first model** and contextualizing reflections around practical, low-barrier hostel actions (e.g., stepping onto a campus green, washing one's face, making tea, or taking a five-minute breather).
+
+---
+
+## ✨ Key Features
+
+### 1. Multi-Factor Daily Check-In
+* **Three-Pillar Assessment:** Log daily **Mood** (5 expressive states: *Great*, *Good*, *Okay*, *Low*, *Overwhelmed*), **Stress Level** (1–5 scale: *Very Low* to *Extreme*), and **Energy Level** (1–5 scale: *Exhausted* to *High*).
+* **Optional Reflection Notes:** Add a personal journal note (up to 500 characters) describing daily triggers or accomplishments.
+* **Dynamic Calendar State:** Automatically evaluates against the user's local date (`YYYY-MM-DD`), immediately reflecting whether today's check-in has been completed.
+
+### 2. Interactive 3D Wellness Orb (Three.js WebGL)
+* **Custom Visual Centerpiece:** Pure Three.js WebGL canvas featuring an electric blue (`#1677FF`) and bright cyan (`#00C2FF`) luminous physical sphere with dual gyroscopic orbital rings.
+* **Constellation Particles:** Luminous orbiting particle network rotating in responsive 3D space.
+* **Cursor Parallax Tracking:** Subtle pointer tracking responds smoothly to desktop mouse coordinates.
+* **Performance Optimization:** Managed with an `IntersectionObserver` that pauses the animation loop when scrolled off-screen (0% idle GPU usage) and gracefully respects `prefers-reduced-motion`.
+
+### 3. Analytics & Check-In History
+* **Metrics & Rolling Averages:** Real-time dashboard displaying current check-in streak, today's status, and calculated 7-day rolling averages for stress and energy.
+* **Visual Trend Graphs:** Comparative bar visualizations contrasting daily stress vs. energy levels.
+* **Mood Distribution:** Breakdown of logged emotional states over recorded check-ins.
+* **Synthetic Demo Records:** Pre-seeded with 6 realistic demo entries (`isSynthetic: true`) so students can immediately explore charts upon first launch. Demo entries are prominently tagged with a **Demo Record** badge.
 
 ### 4. Guided Reflection Prompts
-- Pre-written, hostel-specific journaling and self-reflection prompts categorized by common focus areas:
-  - Roommate dynamics and shared living boundaries.
-  - Academic pressure and exam anxiety.
-  - Sleep habits and irregular schedules.
-  - Homesickness and adapting to living away from family.
-  - Gratitude and small daily wins.
+* Curated self-reflection prompts categorized by authentic hostel challenges:
+  * **Roommate Dynamics:** Setting healthy boundaries in shared living spaces.
+  * **Academic Pressure:** Managing syllabus coverage, deadlines, and exam anxiety.
+  * **Sleep & Routine:** Navigating irregular schedules and late-night hostel noise.
+  * **Homesickness:** Adapting to independence, missing home, and mess food adjustments.
+  * **Gratitude:** Celebrating small daily victories and resilience.
 
-### 5. Verified Support Directory
-- Immediate access to verified, free, 24/7 mental health and emergency helplines in India:
-  - **Tele-MANAS:** `14416` or `1800-891-4416` (Govt. of India 24/7 Toll-Free Mental Health Support, 20+ languages).
-  - **KIRAN Helpline:** `1800-599-0019` (Govt. of India Department of Empowerment of Persons with Disabilities).
-  - **National Emergency Response System:** `112` (All-in-one Police, Fire, Ambulance).
+### 5. Verified 24/7 Helpline Directory
+* Direct, one-tap access to verified, confidential, toll-free Indian support helplines:
+  * **Tele-MANAS (Govt. of India):** Dial `14416` or `1800 891 4416` (24/7, 20+ languages).
+  * **KIRAN Mental Health Helpline:** Dial `1800-599-0019` (Govt. of India, Dept. of Empowerment).
+  * **National Emergency Helpline:** Dial `112` (All-in-one Police, Medical, Fire).
 
-### 6. Transparent Privacy Notice
-- Clear non-clinical disclosure outlining the application's ethical boundaries, data lifecycle, and zero-retention architecture.
+### 6. AI Reflection Companion (Gemma 4)
+* **Hosted Gemma Model:** Communicates with Google's hosted `gemma-4-26b-a4b-it` model via the official `@google/genai` SDK on the Express backend.
+* **Grounded System Persona:** Server-enforced prompt instructions ensure the AI remains warm, grounded, and empathetic, focusing strictly on practical hostel-scale coping strategies.
+* **Deterministic Crisis Interception:** High-priority regex safety screening catches acute self-harm or crisis keywords before invoking the AI, immediately returning emergency contacts (`safetyAlert: true`).
+* **Non-Clinical Guardrails:** The companion explicitly avoids diagnosing psychiatric conditions, prescribing medications, or replacing licensed human care.
 
-### 7. Gemma-Powered AI Companion with Voice
-- **Empathetic Emotional Processing:** Secure Express backend querying Google's hosted `gemma-4-26b-a4b-it` model via the `@google/genai` SDK.
-- **Voice Input (Speech-to-Text):** Dictate reflections using the browser's Web Speech API. Words are transcribed directly into the textarea for review and editing before sending. Speech is never submitted automatically.
-- **Spoken AI Replies (Text-to-Speech):** Listen to any assistant reply on demand using the browser's native `SpeechSynthesis` API. Never autoplays.
-- **Voice Customization & Speed Control:**
-  - Automatically discovers available system voices with asynchronous loading support.
-  - Prioritizes natural English voices (`en-IN` Indian English first, then `en-US` and `en-GB`).
-  - Choose any detected voice and keep your preference throughout the session.
-  - Select speech speeds: `0.8x`, `0.9x` (calibrated default), `1.0x`, and `1.1x` (pitch `1.0`).
-  - **Preview Voice** button to test the selected voice and speed with a short sample phrase before reading long replies.
-  - Automatic speech overlap prevention and instant stop on new message or chat reset.
+### 7. Voice Input & Spoken Responses
+* **Voice Dictation (Speech-to-Text):** Dictate reflections using the browser's native `SpeechRecognition` API. Transcriptions appear directly in the textarea for editing before sending. Audio is never automatically dispatched.
+* **Spoken AI Replies (Text-to-Speech):** Listen to any companion reply on demand using `window.speechSynthesis`. Playback never autoplays.
+* **Voice Customization & Preview:** Automatically enumerates system voices, prioritizing natural Indian English (`en-IN`), followed by `en-US` and `en-GB`. Includes variable speed settings (`0.8x` to `1.1x`) and a "Preview Voice" sample test.
 
-### 8. Crisis Screening Layer
-- Deterministic regex and keyword filter intercepting acute distress expressions before invoking the AI model, instantly returning verified emergency contacts.
+### 8. Lenis Smooth Scrolling & Ambient Lighting
+* Implements [Lenis](https://lenis.darkroom.engineering/) smooth inertia scrolling with active window resize observers.
+* Cinematic dark mode design with layered ambient radial glows and glassmorphic card overlays.
+
+---
+
+## 🎨 Visual Design & Aesthetics
+
+HostelWell is styled with a bespoke design system (`src/styles/index.css`) designed to evoke calm, clarity, and technical refinement:
+
+* **Base Canvas:** Deep obsidian backgrounds (`#0a0d14` and `#05080f`) reducing eye strain during late-night hostel study sessions.
+* **Primary Accents:** Electric blue (`#1677ff`) and vibrant cyan (`#00c2ff`) gradient highlights.
+* **Glassmorphism:** Multi-layered translucent panels (`rgba(16, 22, 36, 0.72)`) with `backdrop-filter: blur(16px)` and subtle hairline borders (`rgba(255, 255, 255, 0.08)`).
+* **Typography:** Inter and Outfit system font stacks optimized for scannability and contrast.
+* **Theme Switching:** Dual theme support with an accessible toggle (defaults to cinematic Dark, with persistent preference stored in `localStorage['hostelwell-theme']`).
 
 ---
 
 ## 🛠️ Technology Stack
 
 ### Frontend
-- **Framework:** [React 19](https://react.dev/) (`^19.3.1`)
-- **Build Tool & Dev Server:** [Vite 8](https://vitejs.dev/) (`^8.3.4`)
-- **Styling:** Vanilla CSS with custom design tokens, glassmorphism, responsive CSS Grid, and Flexbox layouts (`src/styles/index.css`).
-- **Icons:** [Lucide React](https://lucide.dev/) (`^1.61.0`)
-- **Static Analysis & Linter:** [Oxlint](https://oxc.rs/) (`^1.88.0`)
-- **Web Speech APIs:** Browser native `window.SpeechRecognition` / `webkitSpeechRecognition` (STT) and `window.speechSynthesis` (TTS).
+| Technology | Version | Purpose |
+| :--- | :--- | :--- |
+| **[React](https://react.dev/)** | `^19.3.1` | Core UI library & reactive state management |
+| **[Vite](https://vitejs.dev/)** | `^8.3.4` | Modern frontend build tooling and local dev server |
+| **[Three.js](https://threejs.org/)** | `0.186.1` | Interactive 3D WebGL wellness orb canvas |
+| **[Lenis](https://lenis.darkroom.engineering/)** | `1.3.27` | Smooth inertia scroll container |
+| **[GSAP](https://gsap.com/)** | `3.15.0` | Motion and animation library |
+| **[Lucide React](https://lucide.dev/)** | `^1.61.0` | Clean, modern iconography |
+| **[Oxlint](https://oxc.rs/)** | `^1.88.0` | High-performance Rust-based JavaScript/JSX linter |
+| **Vanilla CSS** | Modern CSS3 | Custom design system with CSS custom properties and glassmorphism |
+| **Web Speech APIs** | Native Browser | Client-side `SpeechRecognition` (STT) and `SpeechSynthesis` (TTS) |
 
 ### Backend
-- **Runtime:** [Node.js](https://nodejs.org/) (v18.0.0 or higher; ES Modules)
-- **Web Framework:** [Express](https://expressjs.com/) (`^4.21.2`)
-- **AI SDK:** [@google/genai](https://www.npmjs.com/package/@google/genai) (`^2.31.0`) — official Google Gen AI SDK
-- **CORS:** [cors](https://www.npmjs.com/package/cors) (`^2.8.5`)
-- **Rate Limiting:** [express-rate-limit](https://www.npmjs.com/package/express-rate-limit) (`^7.5.0`)
-- **Configuration:** [dotenv](https://www.npmjs.com/package/dotenv) (`^16.4.7`)
-
----
-
-## 🏗️ System Architecture & Folder Structure
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                 Frontend Client (Browser)                   │
-│          React 19 + Vite (http://localhost:5173)            │
-│                                                             │
-│  ├─ Web Speech API (Microphone Dictation -> Textarea)       │
-│  ├─ SpeechSynthesis API (Spoken AI Replies + Voice Selector)│
-│  ├─ In-Memory React State (Dashboard, Check-ins, History)   │
-│  └─ Chat UI (Transient conversation history capped at 10)    │
-└──────────────────────────────┬──────────────────────────────┘
-                               │ HTTP / JSON
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  Backend Server (Node.js)                   │
-│               Express (http://localhost:5002)               │
-│                                                             │
-│  ├─ Strict CORS (Whitelists CLIENT_URL + Vite dev ports)    │
-│  ├─ Rate Limiter (30 requests / 15 min / IP)                │
-│  ├─ Payload Limiter (max 50kb)                              │
-│  ├─ Deterministic Crisis Safety Filter                      │
-│  └─ aiService (@google/genai SDK + System Persona)          │
-└──────────────────────────────┬──────────────────────────────┘
-                               │ HTTPS / Google Gen AI API
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│             Google Hosted Gemma Open Model                  │
-│                   gemma-4-26b-a4b-it                        │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Repository Structure
-
-```text
-Private-Hostel-Students-Wellness-Checker/
-├── index.html                   # HTML entrypoint with viewport & fonts
-├── package.json                 # Frontend dependencies and scripts
-├── vite.config.js               # Vite bundler configuration
-├── src/
-│   ├── main.jsx                 # React root renderer
-│   ├── App.jsx                  # Main application shell & tab router
-│   ├── App.css                  # Minimal app-level container styles
-│   ├── index.css                # CSS entrypoint importing styles/index.css
-│   ├── styles/
-│   │   └── index.css            # Comprehensive design system & voice styles
-│   ├── data/
-│   │   └── mockData.js          # Mood definitions, scales, & 6 synthetic records
-│   ├── utils/
-│   │   └── dateUtils.js         # Dynamic date formatting & calculation helpers
-│   └── components/
-│       ├── layout/
-│       │   ├── Navbar.jsx       # Header navigation bar with pending badge
-│       │   └── Footer.jsx       # Accessible footer with crisis links
-│       ├── dashboard/
-│       │   └── Dashboard.jsx    # Metrics, rolling averages, & today's status
-│       ├── checkin/
-│       │   └── DailyCheckIn.jsx # Interactive 3-scale check-in form
-│       ├── chat/
-│       │   └── WellnessChat.jsx # AI Companion, voice input, voice playback
-│       ├── history/
-│       │   └── HistoryView.jsx  # Trends, mood breakdown, & timeline
-│       ├── reflection/
-│       │   └── ReflectionPrompts.jsx # Categorized student journal prompts
-│       ├── resources/
-│       │   └── SupportResources.jsx  # Verified 24/7 helpline cards
-│       └── privacy/
-│           └── PrivacyNotice.jsx     # Non-clinical & data privacy statement
-└── server/
-    ├── package.json             # Backend dependencies and scripts
-    ├── .env.example             # Environment variable template
-    ├── README.md                # Dedicated backend documentation
-    └── src/
-        ├── index.js             # Express app, CORS, rate limiter, & error handling
-        ├── config.js            # Port, CORS, key validation, & Gemma model check
-        ├── routes/
-        │   ├── healthRoutes.js  # GET /api/health endpoint
-        │   └── chatRoutes.js    # POST /api/chat endpoint
-        ├── services/
-        │   └── aiService.js     # @google/genai client invocation & timeout
-        └── utils/
-            ├── safetyFilter.js  # Deterministic crisis keyword screening
-            └── systemPrompt.js  # Grounded, hostel-aware Gemma system persona
-```
-
----
-
-## 💾 Data Storage, Privacy & Boundaries
-
-HostelWell is engineered with a strict **privacy-first, zero-retention boundary**:
-
-| Component | Storage Mechanism | Persistence Lifecycle & Privacy Boundaries |
+| Technology | Version | Purpose |
 | :--- | :--- | :--- |
-| **Check-In Logs** | React Component State (`useState` in `App.jsx`) | **In-Memory Only.** Check-ins exist only in the browser's active RAM. Refreshing the browser, navigating away, or closing the tab **resets all newly logged check-ins**. No database, disk file, or browser `localStorage` is used. |
-| **Past History & Trends** | 6 Synthetic Demo Records (`src/data/mockData.js`) | **Demonstration Data.** Pre-seeded with 6 realistic past entries (`isSynthetic: true`) so students can preview visual trends immediately upon first opening the app. |
-| **Chat Conversation** | React Memory in `WellnessChat.jsx` | **Ephemeral Session.** The chat interface holds the active conversation in React state, capped to the last 10 messages for context. Resetting the chat clears the session. |
-| **Backend Chat Messages** | Transient Express Request Lifecycle | **Zero Server Storage.** Messages are processed in RAM to assemble the prompt for Gemma. The backend has **no database, no log files, and no persistent caches**. |
-| **API Keys & Credentials** | Loaded via `dotenv` into `process.env` | **Server-Side Only.** `GEMINI_API_KEY` is never sent to the browser or embedded in client bundles. Protected from Git by `.gitignore`. |
+| **[Node.js](https://nodejs.org/)** | `>=18.0.0` | Server runtime environment (ES Modules) |
+| **[Express](https://expressjs.com/)** | `^4.21.2` | RESTful API server |
+| **[@google/genai](https://www.npmjs.com/package/@google/genai)** | `^2.31.0` | Official Google Gen AI SDK for hosted Gemma inference |
+| **[cors](https://www.npmjs.com/package/cors)** | `^2.8.5` | Cross-Origin Resource Sharing policy enforcement |
+| **[express-rate-limit](https://www.npmjs.com/package/express-rate-limit)** | `^7.5.0` | IP-based request throttling (30 req / 15 min on chat) |
+| **[dotenv](https://www.npmjs.com/package/dotenv)** | `^16.4.7` | Secure environment variable configuration |
 
-### Important Privacy & Security Disclosures
-- **Sensitive Wellness Data:** Check-in entries and personal notes reflect your private emotional state. Because data is stored in memory, do not rely on HostelWell as a permanent personal health journal.
-- **Browser Speech-to-Text Privacy:** When using voice dictation via the browser's Web Speech API (`SpeechRecognition`), transcription is handled natively by your web browser. In some browsers (such as Google Chrome), audio is transmitted to the browser vendor's speech recognition servers in accordance with their privacy policies.
-- **Third-Party AI Inference:** Chat messages sent to the AI Companion are transmitted via encrypted HTTPS through your local Express backend to Google's hosted Gemini API for Gemma model inference. Do not include passwords, academic registration numbers, or identifying personal information in reflection messages.
-- **No User Accounts:** HostelWell currently does not implement user authentication, passwords, or tracking cookies.
+### Deployment & Infrastructure
+* **Frontend Hosting:** [Vercel](https://vercel.com/) (SPA routing with `vercel.json` rewrites)
+* **Backend Hosting:** [Render](https://render.com/) (Web Service managed via `render.yaml`)
+* **AI Model Provider:** [Google AI Studio](https://aistudio.google.com/) (`gemma-4-26b-a4b-it`)
+
+---
+
+## 📐 Application Architecture
+
+```mermaid
+flowchart TD
+    subgraph BrowserClient["Browser Client (React 19 + Vite)"]
+        UI["HostelWell SPA Shell"]
+        Orb["Three.js 3D Wellness Orb"]
+        Speech["Web Speech APIs (STT / TTS)"]
+        Store["In-Memory React State (useState)"]
+        ChatUI["Wellness Chat Component"]
+    end
+
+    subgraph BackendServer["Express Backend (Node.js on Render)"]
+        CORS["CORS Validator (CLIENT_URL + Vite Ports)"]
+        RateLimit["Rate Limiter (30 req / 15 min / IP)"]
+        Safety["Deterministic Crisis Safety Filter"]
+        AIService["AI Service Wrapper (@google/genai SDK)"]
+        SystemPrompt["Server System Prompt (Non-Clinical Persona)"]
+    end
+
+    subgraph GoogleAI["Google Cloud Infrastructure"]
+        GemmaModel["Hosted Gemma 4 Model (gemma-4-26b-a4b-it)"]
+    end
+
+    UI --> Orb
+    UI --> Store
+    ChatUI --> Speech
+    ChatUI -- "POST /api/chat (JSON, max 10 msgs)" --> CORS
+    CORS --> RateLimit
+    RateLimit --> Safety
+
+    Safety -- "Crisis Keywords Detected" --> CrisisReply["Immediate 24/7 Helplines (safetyAlert: true)"]
+    CrisisReply -- "Instant JSON Response" --> ChatUI
+
+    Safety -- "Normal Reflection" --> AIService
+    SystemPrompt --> AIService
+    AIService -- "HTTPS / Google Gen AI API (20s Timeout)" --> GemmaModel
+    GemmaModel -- "Generated Reflection Reply" --> AIService
+    AIService -- "200 OK { reply, model }" --> ChatUI
+```
+
+---
+
+## 🔒 Authentication & Security Status
+
+### Current Implementation Status
+* **Authentication Enforced:** **None in Current Release.**
+* **Supabase Status:** The current codebase **does not** integrate Supabase libraries, database tables, or authentication tokens. All check-in entries exist strictly within client-side React memory.
+* **Route Protection:** Backend endpoints (`/api/health` and `/api/chat`) do not require `Authorization: Bearer <token>` headers at this time.
+
+### Security Controls in Place
+1. **Zero Secret Leakage:** The `GEMINI_API_KEY` is loaded exclusively into the backend `server/.env` file. It is never exposed in client bundles or Vite variables.
+2. **Restricted CORS Policy:** The backend restricts origins to the configured `CLIENT_URL` (production Vercel domain) and local Vite development ports (`5173`–`5189`). Non-browser direct tools (e.g. curl) without an origin header are permitted for operational testing.
+3. **Strict Rate Limiting:** `/api/chat` is throttled to **30 requests per 15 minutes per IP address** via `express-rate-limit`.
+4. **Payload Limiting:** Express body parsing enforces a **50kb** JSON payload limit.
+5. **Inference Timeouts:** Calls to the Google Gen AI API are governed by a **20-second timeout** via an `AbortController`.
+6. **Sanitized Error Responses:** Internal server errors and stack traces are suppressed; clients receive standardized JSON error messages.
+
+---
+
+## 🛡️ Privacy & Data Handling Model
+
+HostelWell is architected with a **privacy-first, zero-retention boundary**:
+
+| Data Category | Handling & Lifecycle | Privacy Boundary |
+| :--- | :--- | :--- |
+| **Daily Check-In Data** | Stored exclusively in browser RAM (`useState` in `App.jsx`). | **In-Memory Only.** Refreshing or closing the tab resets all newly logged entries. Data is never stored in `localStorage`, cookies, or a remote database. |
+| **Analytics History** | Pre-seeded with 6 demonstration entries (`src/data/mockData.js`). | **Demonstration Data.** Flags `isSynthetic: true` to clearly distinguish sample logs from user-entered logs. |
+| **Chat Conversation** | In-memory message list in `WellnessChat.jsx` capped to 10 entries. | **Ephemeral Session.** Resetting the chat clears the session. Messages are not written to browser storage. |
+| **Backend Chat Processing** | Processed in-memory within Express route handlers. | **Zero Storage.** The backend operates with **no database, no log files, and no persistent caches**. |
+| **Speech-to-Text Input** | Processed through native browser `SpeechRecognition`. | Handled by your browser vendor according to their privacy policy. No audio is transmitted to HostelWell's backend. |
+| **AI Inference** | Forwarded over encrypted HTTPS to Google's hosted Gemini API. | Messages are transmitted for inference only. Students are advised **never to input passwords, student IDs, or highly personal identifiers**. |
+
+### ⚠️ Medical Disclaimer
+> **Important Non-Clinical Notice:** HostelWell is a personal reflection tool, **not** a certified medical diagnostic system, clinical psychological tool, or emergency service. It cannot diagnose conditions, prescribe medications, guarantee confidentiality, or dispatch emergency assistance. If you or someone you know is in crisis, contact your hostel warden, campus counselor, or call **14416 (Tele-MANAS)** or **112** immediately.
 
 ---
 
 ## ⚙️ Prerequisites
 
-Ensure you have the following installed before running the project:
+Verify that your local workstation meets the following requirements:
 
-1. **Node.js:** Version 18.0.0 or higher (verify with `node -v`).
-2. **npm:** Version 9.0.0 or higher (verify with `npm -v`).
-3. **Google AI Studio API Key:** A free API key from [Google AI Studio](https://aistudio.google.com/app/apikey) to query hosted Gemma models.
+* **Node.js:** `v18.0.0` or higher (`node -v`)
+* **npm:** `v9.0.0` or higher (`npm -v`)
+* **Google AI Studio API Key:** A free API key from [Google AI Studio](https://aistudio.google.com/app/apikey) to access hosted Gemma models.
 
 ---
 
-## 📦 Installation & Setup
+## 📦 Installation & Local Setup
 
-### 1. Clone the repository
+### 1. Clone the Repository
 ```bash
 git clone https://github.com/Dhruv269/Private-Hostel-Students-Wellness-Checker.git
 cd Private-Hostel-Students-Wellness-Checker
 ```
 
-### 2. Install frontend dependencies
+### 2. Install Frontend Dependencies
 From the repository root:
 ```bash
 npm install
 ```
 
-### 3. Install backend dependencies
-Navigate to the `server/` directory and install:
+### 3. Install Backend Dependencies
+Navigate to the `server/` directory and install dependencies:
 ```bash
 cd server
 npm install
@@ -242,120 +276,107 @@ cd ..
 
 ## 🔐 Environment Configuration
 
-The backend requires a `server/.env` file to configure port settings, authorized origins, and your Google AI Studio credentials.
+### Frontend Configuration (`.env`)
+The frontend reads its API endpoint from Vite environment variables.
 
-1. **Copy the example environment template:**
+1. Create a `.env` file in the repository root:
+   ```bash
+   cp .env.example .env
+   ```
+2. Verify the configuration:
+   ```ini
+   # In local development, falls back to http://localhost:5002 if omitted
+   VITE_API_BASE_URL=http://localhost:5002
+   ```
+
+> **Note:** Vite environment variables prefixed with `VITE_` are publicly bundled into client code. **Never place API keys, private tokens, or server secrets in root `.env` files.**
+
+### Backend Configuration (`server/.env`)
+The backend requires a `server/.env` file to configure network ports, CORS origins, and Google AI Studio credentials.
+
+1. Create `server/.env` from the template:
    ```bash
    cp server/.env.example server/.env
    ```
-
-2. **Open `server/.env` and supply your actual Gemini API key:**
+2. Open `server/.env` and update the parameters:
    ```ini
-   # Server Port (Default is 5002 to avoid macOS AirPlay Receiver port 5000 collision)
+   # Network host (0.0.0.0 binds to all network interfaces)
+   HOST=0.0.0.0
+
+   # Server listening port (Default is 5002 to avoid macOS AirPlay port 5000 conflicts)
    PORT=5002
 
-   # Allowed Frontend Origin for CORS
+   # Allowed frontend client origin for CORS
    CLIENT_URL=http://localhost:5173
 
-   # Google Gemini API Key for accessing hosted Gemma models
-   GEMINI_API_KEY=your_actual_api_key_here
+   # Google AI Studio API key for accessing hosted Gemma models
+   GEMINI_API_KEY=your_actual_gemini_api_key_here
 
-   # Gemma Model Identifier (Mandatory Gemma family model)
+   # Mandatory Gemma family model identifier
    GEMMA_MODEL_ID=gemma-4-26b-a4b-it
    ```
 
-### Configuration Parameters
+### Configuration Parameters Summary
 
-| Parameter | Default Value | Description |
-| :--- | :--- | :--- |
-| `PORT` | `5002` | Port on which the Express server listens. |
-| `CLIENT_URL` | `http://localhost:5173` | Authorized frontend origin for CORS. |
-| `GEMINI_API_KEY` | *(Empty)* | Private API key from Google AI Studio. |
-| `GEMMA_MODEL_ID` | `gemma-4-26b-a4b-it` | Mandatory Gemma family model identifier. |
-
-> **Security Rule:** Never commit `server/.env` or share your API key. It is automatically ignored by `.gitignore`.
+| Environment Variable | Target | Required | Default Value | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `VITE_API_BASE_URL` | Frontend | No (Dev) / Yes (Prod) | `http://localhost:5002` | Base backend URL (normalized to `/api` by `apiConfig.js`). |
+| `HOST` | Backend | No | `0.0.0.0` | Network binding interface. |
+| `PORT` | Backend | No | `5002` | Port on which Express listens. |
+| `CLIENT_URL` | Backend | Yes | `http://localhost:5173` | Allowed CORS origin(s). Supports comma-separated origins. |
+| `GEMINI_API_KEY` | Backend | **Yes** | *(Empty)* | Private Google AI Studio key. |
+| `GEMMA_MODEL_ID` | Backend | No | `gemma-4-26b-a4b-it` | Configured Gemma model ID (`gemma-4-26b-a4b-it`, `gemma-2-9b-it`). |
 
 ---
 
 ## 🚀 Running the Application
 
-To run the full stack locally, open **two separate terminal windows**:
+Running the full application requires starting **two concurrent processes**:
 
-### Terminal 1 — Frontend (Vite)
-From the repository root:
-```bash
-npm run dev
-```
-- Available at: **`http://localhost:5173`** (or `http://localhost:5174` if port 5173 is occupied)
-- Features instant Hot Module Replacement (HMR).
-
-### Terminal 2 — Backend (Express)
+### Step 1: Start the Backend Server (Terminal 1)
 From the repository root:
 ```bash
 cd server
 npm run dev
 ```
-- Available at: **`http://localhost:5002`**
-- Uses Node's built-in file watcher (`node --watch src/index.js`) to restart automatically when backend code changes.
-- Alternatively, use `npm start` for standard execution without watch mode.
+* **Endpoint:** `http://localhost:5002`
+* Uses Node's native file watcher (`node --watch src/index.js`) to restart on code changes.
+* *Alternative production execution:* `npm start`
+
+### Step 2: Start the Frontend Application (Terminal 2)
+In a new terminal window, from the repository root:
+```bash
+npm run dev
+```
+* **Local URL:** `http://localhost:5173`
+* Features instant Vite Hot Module Replacement (HMR).
+* Open `http://localhost:5173` in a modern browser (Google Chrome, Microsoft Edge, or Apple Safari recommended for full Web Speech API compatibility).
+
+> **Important:** The backend server must be running for the AI Reflection Companion chat to generate responses.
 
 ---
 
-## 🤖 Gemma Model Integration
+## 📡 API Reference
 
-HostelWell is built exclusively around **Google's Gemma open models**. Non-Gemma model families (such as Gemini Pro, Llama, or GPT) are explicitly prohibited by project rules.
-
-- **Active Model:** `gemma-4-26b-a4b-it` (Gemma 4 Mixture-of-Experts instruction-tuned model hosted on the Google Gen AI API).
-- **Enforcement:** `server/src/config.js` verifies on server startup that `GEMMA_MODEL_ID` contains `"gemma"`. If an invalid model family is provided, the backend halts immediately with a clear error.
-- **System Persona (`server/src/utils/systemPrompt.js`):** Instructs Gemma to act as a gentle, grounded hostel reflection companion. It focuses on practical hostel-scale coping strategies (having chai, washing one's face, taking a short corridor walk, opening a window) and avoids clinical diagnosis or toxic positivity.
-
----
-
-## 🎙️ Voice & Speech Capabilities
-
-HostelWell features accessible voice capabilities running directly through browser APIs without external audio processing services:
-
-### 1. Voice Input (Speech-to-Text)
-- **Activation:** Click the **"Voice"** microphone button beside the chat textarea.
-- **Behavior:** Dictate your thoughts naturally. The browser transcribes your speech and places it into the textarea.
-- **User Agency:** Voice transcription is **never automatically submitted**. You can read, edit, append, or delete your text before clicking Send.
-- **Browser Compatibility:** Uses standard `SpeechRecognition` / `webkitSpeechRecognition`. Supported in Google Chrome, Microsoft Edge, and Apple Safari.
-
-### 2. Spoken AI Replies (Text-to-Speech)
-- **Activation:** Click the **"Listen"** button located in the metadata of any assistant message bubble.
-- **Playback Control:** Clicking while playing acts as a **"Stop"** button. Speech immediately terminates if you send a new message or click "Reset Chat".
-- **Zero Autoplay:** Replies are never spoken aloud without an explicit user click.
-
-### 3. Voice Selection & Customization
-- **System Voice Detection:** Automatically discovers available system voices using `window.speechSynthesis.getVoices()` and reacts to the `voiceschanged` event.
-- **Intelligent Default:** Prioritizes natural Indian English (`en-IN`), followed by `en-US`, `en-GB`, and general English voices.
-- **Voice Selector Dropdown:** Easily choose any system voice. Your choice is remembered for subsequent messages during your session.
-- **Playback Speed Selector:** Choose from `0.8x`, `0.9x` (calibrated default), `1.0x`, or `1.1x` (with pitch fixed at `1.0`).
-- **Preview Voice:** Click **"Preview Voice"** in the header to hear a short sample phrase with your selected voice and speed before reading long reflections.
-
----
-
-## 📡 Backend API Reference
-
-Base URL: `http://localhost:5002`
+Base Server URL: `http://localhost:5002` (or deployed Render URL)
 
 ### 1. Health Check: `GET /api/health`
-Verifies backend liveness, provider connectivity, configured model, and whether a valid API key is present.
+Verifies backend status, runtime environment, model configuration, and whether a valid API key is present.
 
-- **Method:** `GET`
-- **Headers:** None
+* **Method:** `GET`
+* **Authentication:** None
+* **Headers:** None
 
-#### Success Response (`200 OK`)
+#### Response (`200 OK`)
 ```json
 {
   "status": "healthy",
-  "timestamp": "2026-10-25T03:00:00.000Z",
+  "timestamp": "2026-10-25T14:30:00.000Z",
   "provider": "google-genai",
   "model": "gemma-4-26b-a4b-it",
   "isConfigured": true
 }
 ```
-*(The `isConfigured` flag is `true` when a non-placeholder key is loaded; the API key itself is never revealed).*
 
 #### Test with curl:
 ```bash
@@ -367,8 +388,9 @@ curl -s http://localhost:5002/api/health
 ### 2. Wellness Chat: `POST /api/chat`
 Submits student reflection messages to the hosted Gemma companion.
 
-- **Method:** `POST`
-- **Headers:** `Content-Type: application/json`
+* **Method:** `POST`
+* **Authentication:** None currently enforced
+* **Headers:** `Content-Type: application/json`
 
 #### Request Payload
 ```json
@@ -376,31 +398,29 @@ Submits student reflection messages to the hosted Gemma companion.
   "messages": [
     {
       "role": "user",
-      "content": "Feeling exhausted after back-to-back lectures and noisy hostel corridors."
+      "content": "Feeling exhausted after back-to-back semester exams and noisy hostel corridors."
     }
   ]
 }
 ```
 
-#### Field Specifications
-
-| Field | Type | Required | Constraints |
-| :--- | :--- | :--- | :--- |
-| `messages` | Array of Objects | **Yes** | 1 to 10 messages. |
-| `messages[i].role` | String | **Yes** | Must be `"user"` or `"assistant"`. Final message must be `"user"`. |
-| `messages[i].content` | String | **Yes** | Non-empty string; max 1,000 characters per message. |
+#### Payload Constraints
+* `messages`: Array of objects (1 to 10 items).
+* `messages[i].role`: Must be `"user"` or `"assistant"`.
+* `messages[i].content`: Non-empty string, maximum 1,000 characters per message.
+* Final message in the array must have `role: "user"`.
 
 #### Standard Response (`200 OK`)
 ```json
 {
-  "reply": "It sounds like you've had a demanding day between your classes and the noise around your room...",
+  "reply": "It sounds like you've carried a heavy load today between exams and the hostel environment. Living in close quarters can make it hard to decompress...",
   "model": "gemma-4-26b-a4b-it",
   "safetyAlert": false
 }
 ```
 
-#### Crisis Screening Interception Response (`200 OK`)
-If acute self-harm or crisis patterns are detected, the server bypasses Gemma inference and returns emergency resources:
+#### Crisis Safety Interception Response (`200 OK`)
+When acute self-harm or crisis patterns are detected, Gemma inference is bypassed, and verified emergency helplines are returned:
 ```json
 {
   "reply": "I hear how much pain and exhaustion you are carrying right now, but please know you do not have to be alone through this. HostelWell is only a reflection companion and cannot provide emergency help...",
@@ -430,115 +450,185 @@ If acute self-harm or crisis patterns are detected, the server bypasses Gemma in
 }
 ```
 
-#### Error Codes
+#### Error Status Codes
 
-| Status Code | Reason | Description |
+| Status Code | Reason | Cause |
 | :--- | :--- | :--- |
-| `400 Bad Request` | Validation failure | Missing `messages` array, invalid roles, or message exceeding 1,000 characters. |
-| `403 Forbidden` | CORS rejected | Request originated from an unauthorized web origin. |
-| `429 Too Many Requests` | Rate limit exceeded | IP exceeded 30 requests within 15 minutes. |
-| `503 Service Unavailable` | Unconfigured key | `GEMINI_API_KEY` is missing or contains placeholder text. |
-| `504 Gateway Timeout` | Upstream timeout | Google Gen AI request took longer than 20 seconds. |
+| `400 Bad Request` | Validation Failure | Invalid message roles, missing `messages` array, or text exceeding 1,000 characters. |
+| `403 Forbidden` | CORS Rejected | Request origin not present in backend whitelist. |
+| `429 Too Many Requests` | Rate Limit Exceeded | Client exceeded 30 requests within 15 minutes. |
+| `503 Service Unavailable` | Unconfigured Key | `GEMINI_API_KEY` is missing or contains placeholder text. |
+| `504 Gateway Timeout` | Upstream Timeout | Inference call to Google Gen AI exceeded the 20-second threshold. |
 
 #### Test with curl:
 ```bash
 curl -X POST http://localhost:5002/api/chat \
   -H "Content-Type: application/json" \
-  -d '{"messages": [{"role": "user", "content": "Had a long day studying in the hostel."}]}'
+  -d '{"messages": [{"role": "user", "content": "Had a quiet, productive evening in the hostel."}]}'
 ```
 
 ---
 
-## 🔒 Security, CORS & Rate Limiting
+## 🚀 Deployment Guide
 
-- **Zero Secret Exposure:** `GEMINI_API_KEY` is kept exclusively on the server and is never passed to frontend bundles.
-- **Dynamic CORS Policy:** Whitelists the configured `CLIENT_URL` as well as local Vite development ports (`http://localhost:5173` through `5189`). Non-browser direct requests (like curl) without an origin header are permitted for testing.
-- **IP Rate Limiting:** Enforces a limit of **30 requests per 15 minutes per IP** on `/api/chat` with standard `RateLimit-*` headers.
-- **Payload Size Capping:** Express JSON parser rejects payloads larger than **50kb**.
-- **Inference Timeout:** Upstream API calls are capped at a **20-second timeout** to prevent hanging threads.
-- **Sanitized Errors:** Error handlers catch internal errors and return sanitized client messages without stack traces.
+HostelWell is configured for decoupled deployment with a static frontend on **Vercel** and a Node.js backend service on **Render**.
 
----
+### Frontend Deployment (Vercel)
+1. **Repository Root:** Deploy the root directory to Vercel.
+2. **Build Settings:**
+   * **Framework Preset:** Vite
+   * **Build Command:** `npm run build`
+   * **Output Directory:** `dist`
+3. **Environment Variables:**
+   * Configure `VITE_API_BASE_URL` with your live Render backend URL:
+     ```
+     VITE_API_BASE_URL=https://hostelwell-backend.onrender.com
+     ```
+4. **SPA Rewrites:** Single-page routing is already handled by [`vercel.json`](vercel.json):
+   ```json
+   {
+     "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+   }
+   ```
+5. *Note:* Changing `VITE_API_BASE_URL` requires triggering a new frontend deployment to bake the variable into the build bundle.
 
-## 🛡️ Safety Boundaries & Crisis Screening
+### Backend Deployment (Render)
+The backend includes a declarative Blueprint file [`render.yaml`](render.yaml):
 
-HostelWell is built with strict ethical guidelines:
-
-1. **Non-Clinical & Non-Diagnostic:** HostelWell is a supportive reflection companion, **not** a clinic, doctor, therapist, or emergency response service. It cannot diagnose conditions or prescribe treatments.
-2. **Deterministic Safety Filter:** Keyword screening (`server/src/utils/safetyFilter.js`) catches acute crisis signals before the AI model is called and returns verified national helplines.
-3. **Filter Limitations:** Keyword matching can have false positives and false negatives. It cannot replace human empathy or professional psychological assessment.
-4. **Emergency Guidance:** If you or someone you know is in acute danger, please contact local emergency authorities (**112 in India**) or inform your hostel warden immediately.
-
----
-
-## 🔧 Troubleshooting
-
-### 1. `Error: listen EADDRINUSE: address already in use :::5002`
-- **Cause:** Another process or previous server instance is already running on port 5002.
-- **Solution:** Identify and terminate the process:
-  ```bash
-  # Find PID:
-  lsof -i :5002
-  # Terminate process:
-  kill -9 <PID>
-  ```
-- *Note for macOS users:* Do not configure port `5000` because macOS Monterey and newer reserve port 5000 for AirPlay Receiver (`ControlCenter`).
-
-### 2. Frontend Starts on Port 5174 Instead of 5173
-- **Cause:** Another local dev server is using port 5173.
-- **Resolution:** The backend's CORS configuration automatically authorizes local Vite ports `5173` through `5189`, so the app will connect normally without needing manual CORS changes.
-
-### 3. `503 Service Unavailable: GEMINI_API_KEY is not configured`
-- **Cause:** `server/.env` is missing or contains the placeholder string `replace_with_your_own_key`.
-- **Solution:** Verify `server/.env` exists and contains your actual key from [Google AI Studio](https://aistudio.google.com/app/apikey).
-
-### 4. Browser Speech Input (Voice) Is Unavailable or Disabled
-- **Cause:** Web Speech API is not supported in the active browser, or microphone permissions were denied.
-- **Solution:** Use Google Chrome, Microsoft Edge, or Apple Safari. When prompted by the browser address bar, grant microphone permissions. Firefox does not implement native Web Speech speech recognition by default. Text chat remains fully functional in all browsers.
-
-### 5. No Voices Heard During Text-to-Speech Playback
-- **Cause:** System voices load asynchronously in Chromium-based browsers, or the operating system has no voice synthesizers installed.
-- **Solution:** Wait a moment for voices to populate in the dropdown. Ensure your system volume is unmuted. If no speech synthesizers exist, text chat continues to work seamlessly.
-
-### 6. `[CONFIG ERROR] Non-Gemma model requested`
-- **Cause:** `GEMMA_MODEL_ID` in `server/.env` was modified to a non-Gemma model.
-- **Solution:** Use an approved Gemma model ID, such as `gemma-4-26b-a4b-it` or `gemma-2-9b-it`.
+1. **Service Type:** Web Service
+2. **Runtime:** Node.js
+3. **Root Directory:** `server`
+4. **Build Command:** `npm install`
+5. **Start Command:** `npm start`
+6. **Health Check Path:** `/api/health`
+7. **Environment Variables:**
+   * `NODE_ENV`: `production`
+   * `HOST`: `0.0.0.0`
+   * `PORT`: `5002` (or let Render supply `PORT`)
+   * `CLIENT_URL`: `https://private-hostel-students-wellness-checker-8y0ejsid3.vercel.app` (your deployed Vercel domain)
+   * `GEMINI_API_KEY`: *(Set securely in Render Dashboard)*
+   * `GEMMA_MODEL_ID`: `gemma-4-26b-a4b-it`
 
 ---
 
-## 🧑‍💻 Development & Quality Commands
+## 📂 Repository Structure
 
-From the project root:
-
-```bash
-# Start frontend development server (Vite on http://localhost:5173)
-npm run dev
-
-# Run frontend static analysis and linting (Oxlint)
-npm run lint
-
-# Build frontend production bundle
-npm run build
-
-# Preview production build locally
-npm run preview
+```text
+Private-Hostel-Students-Wellness-Checker/
+├── .env.example                 # Frontend environment template
+├── .gitignore                   # Git exclusion rules (ignores .env and node_modules)
+├── .oxlintrc.json               # Oxlint linter configuration
+├── index.html                   # HTML entry point with meta tags and Google fonts
+├── LICENSE                      # MIT License file
+├── package.json                 # Frontend dependencies and npm scripts
+├── package-lock.json            # Frontend dependency lockfile
+├── render.yaml                  # Declarative Render Blueprint for backend deployment
+├── vercel.json                  # Vercel SPA rewrite configuration
+├── vite.config.js               # Vite bundler configuration
+│
+├── public/                      # Static web assets
+│
+├── src/                         # Frontend React source code
+│   ├── main.jsx                 # React DOM mount point
+│   ├── App.jsx                  # Main application shell, Lenis scroll & tab router
+│   ├── App.css                  # Container layout styles
+│   ├── index.css                # Style entry point importing styles/index.css
+│   │
+│   ├── components/              # Modular UI components
+│   │   ├── chat/
+│   │   │   └── WellnessChat.jsx # AI companion chat with voice STT & TTS
+│   │   ├── checkin/
+│   │   │   └── DailyCheckIn.jsx # Interactive 3-scale check-in form
+│   │   ├── common/
+│   │   │   └── WellnessOrb3D.jsx# Interactive Three.js 3D WebGL wellness orb
+│   │   ├── dashboard/
+│   │   │   └── Dashboard.jsx    # Metrics cards, rolling averages, & status
+│   │   ├── history/
+│   │   │   └── HistoryView.jsx  # Trend bar charts, breakdown & timeline
+│   │   ├── layout/
+│   │   │   ├── Navbar.jsx       # Floating glass navigation bar with badge
+│   │   │   └── Footer.jsx       # Accessible footer with helpline links
+│   │   ├── privacy/
+│   │   │   └── PrivacyNotice.jsx# Data lifecycle & non-clinical disclosure
+│   │   ├── reflection/
+│   │   │   └── ReflectionPrompts.jsx # Categorized student reflection prompts
+│   │   └── resources/
+│   │       └── SupportResources.jsx  # Verified 24/7 crisis helpline cards
+│   │
+│   ├── data/
+│   │   └── mockData.js          # Mood definitions, rating scales, & 6 demo logs
+│   ├── styles/
+│   │   └── index.css            # Comprehensive CSS design system (tokens, themes)
+│   └── utils/
+│       ├── apiConfig.js         # Dynamic backend URL resolver
+│       └── dateUtils.js         # Local date formatting & streak helpers
+│
+└── server/                      # Node.js Express backend service
+    ├── .env.example             # Backend environment template
+    ├── package.json             # Backend dependencies and scripts
+    ├── README.md                # Dedicated backend technical documentation
+    └── src/
+        ├── index.js             # Express server entry point, CORS & rate limiters
+        ├── config.js            # Configuration loader & Gemma model validator
+        ├── routes/
+        │   ├── chatRoutes.js    # POST /api/chat route with validation
+        │   └── healthRoutes.js  # GET /api/health diagnostic route
+        ├── services/
+        │   └── aiService.js     # @google/genai SDK invocation & 20s timeout
+        └── utils/
+            ├── safetyFilter.js  # Deterministic crisis regex screening
+            └── systemPrompt.js  # Server-enforced empathetic Gemma persona
 ```
 
-From the `server/` directory:
+---
 
-```bash
-# Start backend in watch mode (Express on http://localhost:5002)
-npm run dev
+## ⚠️ Known Limitations
 
-# Start backend in standard production mode
-npm start
+1. **In-Memory Check-In State:** Check-ins logged during an active session exist only in React state and reset when the page is reloaded.
+2. **Synthetic Demonstration Data:** Initial historical trends are populated with 6 synthetic entries (`isSynthetic: true`) to provide visual feedback before enough real check-ins accumulate.
+3. **No Database Persistence:** There is currently no persistent database (PostgreSQL, MongoDB, etc.) attached to the application.
+4. **Speech Recognition Browser Support:** Voice dictation relies on the Web Speech API (`SpeechRecognition`). While fully supported in Google Chrome, Microsoft Edge, and Safari, Mozilla Firefox does not support speech recognition natively without external flags.
+5. **Cold Starts on Render Free Tier:** The backend Web Service spins down when idle, resulting in a 30–50 second delay on the first health check or chat request after inactivity.
+6. **AI API Quota Dependence:** Chat functionality depends upon upstream Google AI Studio API availability and rate quotas.
 
-# Run syntax check across all backend files
-node --check src/config.js src/index.js src/routes/chatRoutes.js src/routes/healthRoutes.js src/services/aiService.js src/utils/safetyFilter.js src/utils/systemPrompt.js
-```
+---
+
+## 🔮 Roadmap & Future Enhancements
+
+- [ ] **Opt-In Encrypted Persistence:** Add an optional local encrypted store (IndexedDB / AES-GCM) so students can preserve check-in histories without cloud accounts.
+- [ ] **Supabase Authentication & Row-Level Security:** Implement optional, privacy-respecting email/magic-link authentication with Supabase for cross-device sync.
+- [ ] **Data Export & Deletion:** Provide one-click JSON and CSV export and instant local cache clearing.
+- [ ] **Progressive Web App (PWA):** Enable offline check-ins and installability on mobile devices.
+- [ ] **Multilingual Companion:** Expand AI reflection prompts and system instructions to support Hindi, Tamil, Telugu, and other regional Indian languages.
+- [ ] **Expanded Automated Testing:** Introduce end-to-end Playwright tests and integration test suites for backend route validation.
+
+---
+
+## 🤝 Contributing
+
+Contributions, feedback, and issue reports are welcome. To contribute:
+
+1. Fork the repository.
+2. Create a feature branch:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. Commit your changes following clean commit standards:
+   ```bash
+   git commit -m "feat: describe your change"
+   ```
+4. Verify code quality and linting:
+   ```bash
+   npm run lint
+   ```
+5. Push to your branch and open a Pull Request.
 
 ---
 
 ## 📄 License
 
-This repository currently does not include an open-source license. All rights are reserved by the repository owner until a formal open-source license is added.
+This project is open-source software licensed under the [MIT License](LICENSE).
+
+Copyright (c) 2026 Dhruv269.
+
+*Disclaimer: Third-party dependencies, hosted models, and external APIs utilized by this project are subject to their respective open-source or proprietary licenses and terms of service.*
