@@ -45,6 +45,17 @@ function calculateAverage(list, property) {
   return (sum / list.length).toFixed(1);
 }
 
+/**
+ * Calculates a welcoming time-of-day greeting for students.
+ */
+function getTimeOfDayGreeting() {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) return 'Good morning';
+  if (hour >= 12 && hour < 17) return 'Good afternoon';
+  if (hour >= 17 && hour < 22) return 'Good evening';
+  return 'Late night sanctuary';
+}
+
 export default function Dashboard({ 
   checkIns, 
   todayCheckIn, 
@@ -85,6 +96,7 @@ export default function Dashboard({
 
   const todayMoodObj = todayCheckIn ? getMoodById(todayCheckIn.mood) : null;
   const todayFormatted = formatDisplayDate(getTodayDateString());
+  const timeGreeting = getTimeOfDayGreeting();
 
   // Purposeful GSAP Hero & Bento Entrance Animations (Robust fromTo with clearProps)
   useEffect(() => {
@@ -149,14 +161,14 @@ export default function Dashboard({
           <div className="dashboard-hero-copy">
             <div className="hero-pill-badge gsap-hero-badge">
               <Sparkles size={14} className="hero-pill-icon" aria-hidden="true" />
-              <span>{todayFormatted} • Student Mental Equilibrium</span>
+              <span>{timeGreeting} • {todayFormatted} • Find Your Balance</span>
             </div>
 
             {!todayCheckIn ? (
               <>
                 <h1 id="dashboard-hero-title" className="hero-headline gsap-hero-title">
-                  Restoring quiet balance <br />
-                  <span className="hero-headline-accent">to hostel life.</span>
+                  HostelWell — <br />
+                  <span className="hero-headline-accent">Find Your Balance.</span>
                 </h1>
                 <p className="hero-lead gsap-hero-desc">
                   A private, calm sanctuary to observe your academic stress, daily energy, and emotional state. In-memory and autonomous, designed for hostel students without surveillance.
@@ -191,8 +203,8 @@ export default function Dashboard({
             ) : (
               <>
                 <h1 id="dashboard-hero-title" className="hero-headline gsap-hero-title">
-                  Today's equilibrium <br />
-                  <span className="hero-headline-accent">is recorded.</span>
+                  Your Balance <br />
+                  <span className="hero-headline-accent">is preserved today.</span>
                 </h1>
                 <p className="hero-lead gsap-hero-desc">
                   Thank you for pausing for self-reflection. Your session metrics are active. Explore empathetic dialogue with the Gemma AI companion or review your 7-day wellness trends.

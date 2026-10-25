@@ -14,7 +14,7 @@ export default function Footer({ setActiveTab, theme = 'dark', toggleTheme }) {
               <Sparkles size={16} />
             </div>
             <span className="footer-brand-title">HostelWell</span>
-            <span className="footer-brand-subtitle">Private Student Sanctuary</span>
+            <span className="footer-brand-subtitle">Find Your Balance</span>
           </div>
           <p className="footer-desc">
             An in-memory, private wellness sanctuary designed for hostel students across India. Reflect on daily pressures, track inner stamina, and notice emotional patterns without surveillance.
